@@ -91,7 +91,14 @@ func (g *gui) makeUI() fyne.CanvasObject {
 				}),
 				widget.NewToolbarAction(theme.MediaPlayIcon(), func() {
 					w2 := fyne.CurrentApp().NewWindow("Play")
-					w2.SetContent(canvas.NewRectangle(color.White))
+
+					content := widget.NewRichText()
+					items := strings.Split(entry.Text, "---")
+					content.ParseMarkdown(items[0])
+
+					colorTexts(content.Segments)
+					content.Refresh()
+					w2.SetContent(newAspectContainer(canvas.NewRectangle(color.White), content))
 
 					w2.Canvas().SetOnTypedKey(func(k *fyne.KeyEvent) {
 						if k.Name == fyne.KeyEscape {
