@@ -33,20 +33,22 @@ func (g *gui) makeUI() fyne.CanvasObject {
 		count, _ := g.count.Get()
 		items := make([]fyne.CanvasObject, count)
 		for i := 0; i < count; i++ {
-			p := canvas.NewRectangle(color.White)
-			p.StrokeColor = theme.PrimaryColor()
-			p.SetMinSize(fyne.NewSize(80, 45))
+			bg := canvas.NewRectangle(color.White)
+			bg.StrokeColor = theme.PrimaryColor()
 			c, _ := g.current.Get()
 			if c == i {
-				p.StrokeWidth = 3
+				bg.StrokeWidth = 3
 			} else {
-				p.StrokeWidth = 0
+				bg.StrokeWidth = 0
 			}
 
 			t := fmt.Sprintf("Slide %d", i+1)
 			title := canvas.NewText(t, theme.BackgroundColor())
 			title.TextSize = 8
-			items[i] = container.NewMax(p, container.NewPadded(container.NewVBox(title)))
+			slide := newAspectContainer(bg, container.NewPadded(container.NewVBox(title)))
+			num := fmt.Sprintf("%d:", i+1)
+			items[i] = container.NewPadded(
+				container.NewHBox(container.NewVBox(canvas.NewText(num, theme.ForegroundColor())), slide))
 		}
 		previews.Objects = items
 		previews.Refresh()
@@ -66,7 +68,7 @@ func (g *gui) makeUI() fyne.CanvasObject {
 
 	entry.SetText("# Slide 1")
 
-	split := container.NewHSplit(entry, render)
+	split := container.NewHSplit(entry, newAspectContainer(render))
 	split.Offset = 0.35
 	return container.NewBorder(
 		container.NewVBox(
@@ -77,14 +79,14 @@ func (g *gui) makeUI() fyne.CanvasObject {
 				widget.NewToolbarAction(theme.NavigateBackIcon(), func() {
 					i, _ := g.current.Get()
 					if i > 0 {
-						_ = g.current.Set(i-1)
+						_ = g.current.Set(i - 1)
 					}
 				}),
 				widget.NewToolbarAction(theme.NavigateNextIcon(), func() {
 					i, _ := g.current.Get()
 					c, _ := g.count.Get()
-					if i < c - 1 {
-						_ = g.current.Set(i+1)
+					if i < c-1 {
+						_ = g.current.Set(i + 1)
 					}
 				}),
 				widget.NewToolbarAction(theme.MediaPlayIcon(), func() {
@@ -102,7 +104,9 @@ func (g *gui) makeUI() fyne.CanvasObject {
 				widget.NewToolbarSpacer(),
 				widget.NewToolbarAction(theme.HelpIcon(), func() {}),
 			),
-			container.NewHBox(previews)),
+			container.NewHScroll(container.NewMax(
+				canvas.NewRectangle(theme.MenuBackgroundColor()),
+				container.NewHBox(previews)))),
 		nil,
 		nil,
 		nil,
