@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"image/color"
 	"strings"
 
@@ -33,22 +32,8 @@ func (g *gui) makeUI() fyne.CanvasObject {
 		count, _ := g.count.Get()
 		items := make([]fyne.CanvasObject, count)
 		for i := 0; i < count; i++ {
-			bg := canvas.NewRectangle(color.White)
-			bg.StrokeColor = theme.PrimaryColor()
-			c, _ := g.current.Get()
-			if c == i {
-				bg.StrokeWidth = 3
-			} else {
-				bg.StrokeWidth = 0
-			}
-
-			t := fmt.Sprintf("Slide %d", i+1)
-			title := canvas.NewText(t, theme.BackgroundColor())
-			title.TextSize = 8
-			slide := newAspectContainer(bg, container.NewPadded(container.NewVBox(title)))
-			num := fmt.Sprintf("%d:", i+1)
-			items[i] = container.NewPadded(
-				container.NewHBox(container.NewVBox(canvas.NewText(num, theme.ForegroundColor())), slide))
+			slide := g.newSlideButton(i)
+			items[i] = container.NewPadded(slide)
 		}
 		previews.Objects = items
 		previews.Refresh()
