@@ -2,6 +2,7 @@ package main
 
 import (
 	"image/color"
+	"log"
 	"strings"
 
 	"fyne.io/fyne/v2"
@@ -14,6 +15,9 @@ import (
 
 type gui struct {
 	count, current binding.Int
+
+	content *widget.Entry
+	preview *widget.RichText
 }
 
 func newGUI() *gui {
@@ -23,12 +27,12 @@ func newGUI() *gui {
 }
 
 func (g *gui) makeUI() fyne.CanvasObject {
-	entry := widget.NewMultiLineEntry()
-	content := widget.NewRichText()
-	render := container.NewMax(canvas.NewRectangle(color.White), content)
+	g.content = widget.NewMultiLineEntry()
+	g.preview = widget.NewRichText()
+	render := container.NewMax(canvas.NewRectangle(color.White), g.preview)
 
 	previews := container.NewGridWithRows(1)
-	refreshPreview := func() {
+	refreshPreviews := func() {
 		count, _ := g.count.Get()
 		items := make([]fyne.CanvasObject, count)
 		for i := 0; i < count; i++ {
@@ -38,22 +42,19 @@ func (g *gui) makeUI() fyne.CanvasObject {
 		previews.Objects = items
 		previews.Refresh()
 	}
-	refreshPreview()
-	g.count.AddListener(binding.NewDataListener(refreshPreview))
-	g.current.AddListener(binding.NewDataListener(refreshPreview))
+	refreshPreviews()
+	g.count.AddListener(binding.NewDataListener(refreshPreviews))
+	g.current.AddListener(binding.NewDataListener(func() {
+		refreshPreviews()
+		g.refreshSlide()
+	}))
 
-	entry.OnChanged = func(s string) {
-		items := strings.Split(s, "---")
-		_ = g.count.Set(len(items))
-		content.ParseMarkdown(items[0])
-
-		colorTexts(content.Segments)
-		content.Refresh()
+	g.content.OnChanged = func(s string) {
+		g.refreshSlide()
 	}
+	g.content.SetText("# Slide 1")
 
-	entry.SetText("# Slide 1")
-
-	split := container.NewHSplit(entry, newAspectContainer(render))
+	split := container.NewHSplit(g.content, newAspectContainer(render))
 	split.Offset = 0.35
 	return container.NewBorder(
 		container.NewVBox(
@@ -78,7 +79,7 @@ func (g *gui) makeUI() fyne.CanvasObject {
 					w2 := fyne.CurrentApp().NewWindow("Play")
 
 					content := widget.NewRichText()
-					items := strings.Split(entry.Text, "---")
+					items := strings.Split(g.content.Text, "---")
 					content.ParseMarkdown(items[0])
 
 					colorTexts(content.Segments)
@@ -103,4 +104,18 @@ func (g *gui) makeUI() fyne.CanvasObject {
 		nil,
 		nil,
 		split)
+}
+
+func (g *gui) refreshSlide() {
+	items := strings.Split(g.content.Text, "---")
+	_ = g.count.Set(len(items))
+	id, _ := g.current.Get()
+	if id >= len(items) {
+		log.Println("Cannot set slide beyond length")
+		id = len(items) - 1
+	}
+	g.preview.ParseMarkdown(items[id])
+
+	colorTexts(g.preview.Segments)
+	g.preview.Refresh()
 }
