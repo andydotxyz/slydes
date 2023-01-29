@@ -59,7 +59,9 @@ func (g *gui) makeUI() fyne.CanvasObject {
 	return container.NewBorder(
 		container.NewVBox(
 			widget.NewToolbar(
-				widget.NewToolbarAction(theme.FileIcon(), func() {}),
+				widget.NewToolbarAction(theme.FileIcon(), func() {
+					g.content.SetText("# Slide 1")
+				}),
 				widget.NewToolbarAction(theme.DocumentSaveIcon(), func() {}),
 				widget.NewToolbarSeparator(),
 				widget.NewToolbarAction(theme.NavigateBackIcon(), func() {
@@ -75,9 +77,7 @@ func (g *gui) makeUI() fyne.CanvasObject {
 						g.moveToSlide(i + 1)
 					}
 				}),
-				widget.NewToolbarAction(theme.MediaPlayIcon(), func() {
-					g.showPresentWindow()
-				}),
+				widget.NewToolbarAction(theme.MediaPlayIcon(), g.showPresentWindow),
 				widget.NewToolbarSpacer(),
 				widget.NewToolbarAction(theme.HelpIcon(), func() {}),
 			),
