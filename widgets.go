@@ -24,13 +24,13 @@ func (s *slideButton) CreateRenderer() fyne.WidgetRenderer {
 }
 
 func (s *slideButton) Tapped(_ *fyne.PointEvent) {
-	s.g.current.Set(s.id)
+	s.g.s.current.Set(s.id)
 }
 
 func (g *gui) newSlideButton(id int) fyne.CanvasObject {
 	bg := canvas.NewRectangle(color.White)
 	bg.StrokeColor = theme.PrimaryColor()
-	c, _ := g.current.Get()
+	c, _ := g.s.current.Get()
 	if c == id {
 		bg.StrokeWidth = 3
 	} else {

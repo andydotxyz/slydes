@@ -2,7 +2,6 @@ package main
 
 import (
 	"image/color"
-	"log"
 	"strings"
 
 	"fyne.io/fyne/v2"
@@ -14,16 +13,14 @@ import (
 )
 
 type gui struct {
-	count, current binding.Int
-
 	content *widget.Entry
 	preview *widget.RichText
+
+	s *slides
 }
 
-func newGUI() *gui {
-	g := &gui{count: binding.NewInt(), current: binding.NewInt()}
-	_ = g.count.Set(1)
-	return g
+func newGUI(s *slides) *gui {
+	return &gui{s: s}
 }
 
 func (g *gui) makeUI() fyne.CanvasObject {
@@ -33,7 +30,7 @@ func (g *gui) makeUI() fyne.CanvasObject {
 
 	previews := container.NewGridWithRows(1)
 	refreshPreviews := func() {
-		count, _ := g.count.Get()
+		count, _ := g.s.count.Get()
 		items := make([]fyne.CanvasObject, count)
 		for i := 0; i < count; i++ {
 			slide := g.newSlideButton(i)
@@ -43,15 +40,18 @@ func (g *gui) makeUI() fyne.CanvasObject {
 		previews.Refresh()
 	}
 	refreshPreviews()
-	g.count.AddListener(binding.NewDataListener(refreshPreviews))
-	g.current.AddListener(binding.NewDataListener(func() {
+	g.s.count.AddListener(binding.NewDataListener(refreshPreviews))
+	g.s.current.AddListener(binding.NewDataListener(func() {
 		refreshPreviews()
 		g.refreshSlide()
 	}))
 
 	g.content.OnChanged = func(s string) {
+		g.s.parseSource(s)
+		g.slideForCursor()
 		g.refreshSlide()
 	}
+	g.content.OnCursorChanged = g.slideForCursor
 	g.content.SetText("# Slide 1")
 
 	split := container.NewHSplit(g.content, newAspectContainer(render))
@@ -63,16 +63,16 @@ func (g *gui) makeUI() fyne.CanvasObject {
 				widget.NewToolbarAction(theme.DocumentSaveIcon(), func() {}),
 				widget.NewToolbarSeparator(),
 				widget.NewToolbarAction(theme.NavigateBackIcon(), func() {
-					i, _ := g.current.Get()
+					i, _ := g.s.current.Get()
 					if i > 0 {
-						_ = g.current.Set(i - 1)
+						_ = g.s.current.Set(i - 1)
 					}
 				}),
 				widget.NewToolbarAction(theme.NavigateNextIcon(), func() {
-					i, _ := g.current.Get()
-					c, _ := g.count.Get()
+					i, _ := g.s.current.Get()
+					c, _ := g.s.count.Get()
 					if i < c-1 {
-						_ = g.current.Set(i + 1)
+						_ = g.s.current.Set(i + 1)
 					}
 				}),
 				widget.NewToolbarAction(theme.MediaPlayIcon(), func() {
@@ -106,15 +106,21 @@ func (g *gui) makeUI() fyne.CanvasObject {
 		split)
 }
 
-func (g *gui) refreshSlide() {
-	items := strings.Split(g.content.Text, "---")
-	_ = g.count.Set(len(items))
-	id, _ := g.current.Get()
-	if id >= len(items) {
-		log.Println("Cannot set slide beyond length")
-		id = len(items) - 1
+func (g *gui) slideForCursor() {
+	id := 0
+	for _, row := range g.s.divideRows {
+		if g.content.CursorRow < row {
+			break
+		} else if g.content.CursorRow == row && g.content.CursorColumn < 3 {
+			break // if it's a divide line, but not on the end
+		}
+		id++
 	}
-	g.preview.ParseMarkdown(items[id])
+	g.s.current.Set(id)
+}
+
+func (g *gui) refreshSlide() {
+	g.preview.ParseMarkdown(g.s.currentSource())
 
 	colorTexts(g.preview.Segments)
 	g.preview.Refresh()

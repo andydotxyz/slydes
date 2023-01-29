@@ -10,7 +10,8 @@ func main() {
 	w := a.NewWindow("Slydes")
 	w.Resize(fyne.NewSize(600, 330))
 
-	g := newGUI()
+	s := newSlides()
+	g := newGUI(s)
 	w.SetContent(g.makeUI())
 	w.ShowAndRun()
 }
