@@ -87,9 +87,29 @@ func (g *gui) makeUI() fyne.CanvasObject {
 					content.Refresh()
 					w2.SetContent(newAspectContainer(canvas.NewRectangle(color.White), content))
 
+					id := 0
 					w2.Canvas().SetOnTypedKey(func(k *fyne.KeyEvent) {
-						if k.Name == fyne.KeyEscape {
+						switch k.Name {
+						case fyne.KeyEscape:
 							w2.Close()
+						case fyne.KeyLeft, fyne.KeyUp:
+							if id <= 0 {
+								return
+							}
+
+							id--
+							content.ParseMarkdown(items[id])
+							colorTexts(content.Segments)
+							content.Refresh()
+						case fyne.KeyRight, fyne.KeyDown, fyne.KeySpace, fyne.KeyEnter, fyne.KeyReturn:
+							if id >= len(items)-1 {
+								return
+							}
+
+							id++
+							content.ParseMarkdown(items[id])
+							colorTexts(content.Segments)
+							content.Refresh()
 						}
 					})
 					w2.SetFullScreen(true)
