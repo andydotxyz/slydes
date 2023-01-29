@@ -16,11 +16,12 @@ type gui struct {
 	content *widget.Entry
 	preview *widget.RichText
 
-	s *slides
+	win fyne.Window
+	s   *slides
 }
 
-func newGUI(s *slides) *gui {
-	return &gui{s: s}
+func newGUI(s *slides, w fyne.Window) *gui {
+	return &gui{s: s, win: w}
 }
 
 func (g *gui) makeUI() fyne.CanvasObject {
@@ -65,14 +66,14 @@ func (g *gui) makeUI() fyne.CanvasObject {
 				widget.NewToolbarAction(theme.NavigateBackIcon(), func() {
 					i, _ := g.s.current.Get()
 					if i > 0 {
-						_ = g.s.current.Set(i - 1)
+						g.moveToSlide(i - 1)
 					}
 				}),
 				widget.NewToolbarAction(theme.NavigateNextIcon(), func() {
 					i, _ := g.s.current.Get()
 					c, _ := g.s.count.Get()
 					if i < c-1 {
-						_ = g.s.current.Set(i + 1)
+						g.moveToSlide(i + 1)
 					}
 				}),
 				widget.NewToolbarAction(theme.MediaPlayIcon(), func() {
@@ -104,6 +105,18 @@ func (g *gui) makeUI() fyne.CanvasObject {
 		nil,
 		nil,
 		split)
+}
+
+func (g *gui) moveToSlide(id int) {
+	g.content.CursorColumn = 0
+	if len(g.s.divideRows) == 0 || id == 0 {
+		g.content.CursorRow = 0
+	} else {
+		div := g.s.divideRows[id-1]
+		g.content.CursorRow = div + 1
+	}
+
+	g.win.Canvas().Focus(g.content)
 }
 
 func (g *gui) slideForCursor() {

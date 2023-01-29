@@ -11,7 +11,7 @@ func main() {
 	w.Resize(fyne.NewSize(600, 330))
 
 	s := newSlides()
-	g := newGUI(s)
+	g := newGUI(s, w)
 	w.SetContent(g.makeUI())
 	w.ShowAndRun()
 }

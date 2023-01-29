@@ -24,7 +24,7 @@ func (s *slideButton) CreateRenderer() fyne.WidgetRenderer {
 }
 
 func (s *slideButton) Tapped(_ *fyne.PointEvent) {
-	s.g.s.current.Set(s.id)
+	s.g.moveToSlide(s.id)
 }
 
 func (g *gui) newSlideButton(id int) fyne.CanvasObject {
