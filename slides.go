@@ -2,8 +2,9 @@ package main
 
 import (
 	"bufio"
-	"fyne.io/fyne/v2/data/binding"
 	"strings"
+
+	"fyne.io/fyne/v2/data/binding"
 )
 
 type slides struct {
