@@ -29,20 +29,16 @@ func (s *slideButton) Tapped(_ *fyne.PointEvent) {
 }
 
 func (g *gui) newSlideButton(id int) fyne.CanvasObject {
-	bg := canvas.NewRectangle(color.White)
-	bg.StrokeColor = theme.PrimaryColor()
+	border := canvas.NewRectangle(color.Transparent)
+	border.StrokeColor = theme.PrimaryColor()
 	c, _ := g.s.current.Get()
 	if c == id {
-		bg.StrokeWidth = 3
+		border.StrokeWidth = 2
 	} else {
-		bg.StrokeWidth = 0
+		border.StrokeWidth = 0
 	}
 
-	t := fmt.Sprintf("Slide %d", id+1)
-	title := canvas.NewText(t, theme.BackgroundColor())
-	title.TextSize = 8
-	slide := newAspectContainer(bg, container.NewPadded(container.NewVBox(title)))
-
+	slide := newAspectContainer(newSlide(widget.NewRichTextFromMarkdown(g.s.items[id])), border)
 	button := &slideButton{id: id, content: slide, g: g}
 	button.ExtendBaseWidget(button)
 	return button

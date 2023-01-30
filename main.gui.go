@@ -1,8 +1,6 @@
 package main
 
 import (
-	"image/color"
-
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/container"
@@ -13,7 +11,7 @@ import (
 
 type gui struct {
 	content *widget.Entry
-	preview *widget.RichText
+	render  *slide
 
 	win fyne.Window
 	s   *slides
@@ -25,8 +23,6 @@ func newGUI(s *slides, w fyne.Window) *gui {
 
 func (g *gui) makeUI() fyne.CanvasObject {
 	g.content = widget.NewMultiLineEntry()
-	g.preview = widget.NewRichText()
-	render := container.NewMax(canvas.NewRectangle(color.White), g.preview)
 
 	previews := container.NewGridWithRows(1)
 	refreshPreviews := func() {
@@ -46,15 +42,17 @@ func (g *gui) makeUI() fyne.CanvasObject {
 		g.refreshSlide()
 	}))
 
+	g.render = newSlide(widget.NewRichText())
 	g.content.OnChanged = func(s string) {
 		g.s.parseSource(s)
 		g.slideForCursor()
+		refreshPreviews()
 		g.refreshSlide()
 	}
 	g.content.OnCursorChanged = g.slideForCursor
 	g.content.SetText("# Slide 1")
 
-	split := container.NewHSplit(g.content, newAspectContainer(render))
+	split := container.NewHSplit(g.content, newAspectContainer(g.render))
 	split.Offset = 0.35
 	return container.NewBorder(
 		container.NewVBox(
@@ -116,8 +114,6 @@ func (g *gui) slideForCursor() {
 }
 
 func (g *gui) refreshSlide() {
-	g.preview.ParseMarkdown(g.s.currentSource())
-
-	colorTexts(g.preview.Segments)
-	g.preview.Refresh()
+	parsed := widget.NewRichTextFromMarkdown(g.s.currentSource())
+	g.render.setSource(parsed)
 }

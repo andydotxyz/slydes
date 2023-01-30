@@ -13,5 +13,6 @@ func main() {
 	s := newSlides()
 	g := newGUI(s, w)
 	w.SetContent(g.makeUI())
+	w.Canvas().Focus(g.content)
 	w.ShowAndRun()
 }
