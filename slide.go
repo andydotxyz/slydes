@@ -9,8 +9,16 @@ import (
 	"fyne.io/fyne/v2/widget"
 )
 
+type slideType int
+
+const (
+	otherSlide slideType = iota
+	headingSlide
+)
+
 type slide struct {
 	widget.BaseWidget
+	variant slideType
 
 	content             *fyne.Container
 	bg                  fyne.CanvasObject
@@ -57,7 +65,9 @@ func (s *slide) addContent(items *[]fyne.CanvasObject, segs []widget.RichTextSeg
 				}
 				s.heading = canvas.NewText(seg.Text, color.Black)
 				s.heading.TextStyle.Bold = true
-				s.themeText(s.heading)
+				s.themeText(s.heading, seg.Style)
+
+				s.variant = headingSlide
 				*items = append(*items, s.heading)
 			case widget.RichTextStyleSubHeading:
 				if s.subheading != nil {
@@ -65,14 +75,18 @@ func (s *slide) addContent(items *[]fyne.CanvasObject, segs []widget.RichTextSeg
 				}
 				s.subheading = canvas.NewText(seg.Text, color.Black)
 				s.subheading.TextStyle.Bold = true
-				s.themeText(s.heading)
+				s.themeText(s.subheading, seg.Style)
+
+				s.variant = headingSlide
 				*items = append(*items, s.subheading)
 			default:
 				if s.paragraph != nil {
 					continue
 				}
 				s.paragraph = canvas.NewText(seg.Text, color.Black)
-				s.themeText(s.heading)
+				s.themeText(s.paragraph, seg.Style)
+
+				s.variant = otherSlide
 				*items = append(*items, s.paragraph)
 			}
 		case *widget.ListSegment:

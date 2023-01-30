@@ -10,7 +10,7 @@ const slideHeight = float32(240)
 func (s *slide) layout(size fyne.Size) {
 	scale := size.Height / slideHeight
 
-	if s.paragraph == nil {
+	if s.variant == headingSlide {
 		s.layoutTitleSlide(size, scale)
 	} else {
 		s.layoutFallback(scale)
@@ -29,10 +29,6 @@ func (s *slide) layoutTitleSlide(size fyne.Size, scale float32) {
 		s.heading.Refresh()
 	}
 	if s.subheading != nil {
-		if height > 0 {
-			height += theme.InnerPadding() * scale
-		}
-
 		s.subheading.TextSize = theme.TextSubHeadingSize() * scale
 		s.subheading.Alignment = fyne.TextAlignCenter
 
