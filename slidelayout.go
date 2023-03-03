@@ -2,6 +2,7 @@ package main
 
 import (
 	"fyne.io/fyne/v2"
+	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/theme"
 )
 
@@ -10,10 +11,13 @@ const slideHeight = float32(240)
 func (s *slide) layout(size fyne.Size) {
 	scale := size.Height / slideHeight
 
-	if s.variant == headingSlide {
+	switch s.variant {
+	case headingSlide:
 		s.layoutTitleSlide(size, scale)
-	} else {
-		s.layoutFallback(scale)
+	case imageSlide:
+		s.layoutImage(size)
+	default:
+		s.layoutFallback(size, scale)
 	}
 }
 
@@ -47,24 +51,42 @@ func (s *slide) layoutTitleSlide(size fyne.Size, scale float32) {
 	}
 }
 
-func (s *slide) layoutFallback(scale float32) {
+func (s *slide) layoutFallback(size fyne.Size, scale float32) {
+	skip := 1
 	pad := theme.Padding() * scale
 	y := pad
 	if s.heading != nil {
+		skip++
 		s.heading.TextSize = theme.TextHeadingSize() * scale
 		s.heading.Move(fyne.NewPos(pad, pad))
 		s.heading.Refresh()
 		y += s.heading.MinSize().Height + theme.InnerPadding()*scale
 	}
 	if s.subheading != nil {
+		skip++
 		s.subheading.TextSize = theme.TextSubHeadingSize() * scale
 		s.subheading.Move(fyne.NewPos(pad, y))
 		s.subheading.Refresh()
 		y += s.subheading.MinSize().Height + theme.InnerPadding()*scale
 	}
-	if s.paragraph != nil {
-		s.paragraph.TextSize = theme.TextSize() * scale
-		s.paragraph.Move(fyne.NewPos(pad, y))
-		s.paragraph.Refresh()
+
+	// TODO split/layout not just stack
+	for _, o := range s.content.Objects[skip:] {
+		switch t := o.(type) {
+		case *canvas.Image:
+			t.FillMode = canvas.ImageFillContain
+			t.SetMinSize(fyne.NewSize(128*scale, 80*scale)) // TODO remove once we layout properly
+		case *canvas.Text:
+			t.TextSize = theme.TextSize() * scale
+		}
+		o.Move(fyne.NewPos(pad, y))
+		o.Resize(o.MinSize())
+		y += o.MinSize().Height + theme.Padding()*scale
+	}
+}
+
+func (s *slide) layoutImage(size fyne.Size) {
+	for _, o := range s.content.Objects[1:] {
+		o.Resize(size)
 	}
 }

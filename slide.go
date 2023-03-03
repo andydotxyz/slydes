@@ -14,6 +14,7 @@ type slideType int
 const (
 	otherSlide slideType = iota
 	headingSlide
+	imageSlide
 )
 
 type slide struct {
@@ -23,7 +24,6 @@ type slide struct {
 	content             *fyne.Container
 	bg                  fyne.CanvasObject
 	heading, subheading *canvas.Text
-	paragraph           *canvas.Text
 }
 
 func newSlide(in *widget.RichText) *slide {
@@ -33,7 +33,6 @@ func newSlide(in *widget.RichText) *slide {
 	items := []fyne.CanvasObject{s.bg}
 	s.heading = nil
 	s.subheading = nil
-	s.paragraph = nil
 	s.addContent(&items, in.Segments)
 	s.content = container.NewWithoutLayout(items...)
 	return s
@@ -80,19 +79,24 @@ func (s *slide) addContent(items *[]fyne.CanvasObject, segs []widget.RichTextSeg
 				s.variant = headingSlide
 				*items = append(*items, s.subheading)
 			default:
-				if s.paragraph != nil {
-					continue
-				}
-				s.paragraph = canvas.NewText(seg.Text, color.Black)
-				s.themeText(s.paragraph, seg.Style)
+				text := canvas.NewText(seg.Text, color.Black)
+				s.themeText(text, seg.Style)
 
 				s.variant = otherSlide
-				*items = append(*items, s.paragraph)
+				*items = append(*items, text)
 			}
 		case *widget.ListSegment:
 			s.addContent(items, seg.Items)
 		case *widget.ParagraphSegment:
 			s.addContent(items, seg.Texts)
+		case *widget.ImageSegment:
+			img := canvas.NewImageFromFile(seg.Source.Path())
+			*items = append(*items, img)
+			if s.heading == nil {
+				s.variant = imageSlide
+			} else {
+				s.variant = otherSlide
+			}
 		}
 	}
 }
@@ -101,7 +105,6 @@ func (s *slide) setSource(rich *widget.RichText) {
 	items := []fyne.CanvasObject{s.bg}
 	s.heading = nil
 	s.subheading = nil
-	s.paragraph = nil
 	s.addContent(&items, rich.Segments)
 	s.content.Objects = items
 	s.content.Refresh()
