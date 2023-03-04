@@ -15,6 +15,7 @@ type gui struct {
 
 	win fyne.Window
 	s   *slides
+	uri fyne.URI
 }
 
 func newGUI(s *slides, w fyne.Window) *gui {
@@ -57,10 +58,9 @@ func (g *gui) makeUI() fyne.CanvasObject {
 	return container.NewBorder(
 		container.NewVBox(
 			widget.NewToolbar(
-				widget.NewToolbarAction(theme.FileIcon(), func() {
-					g.content.SetText("# Slide 1")
-				}),
-				widget.NewToolbarAction(theme.DocumentSaveIcon(), func() {}),
+				widget.NewToolbarAction(theme.FileIcon(), g.clearFile),
+				widget.NewToolbarAction(theme.FolderOpenIcon(), g.openFile),
+				widget.NewToolbarAction(theme.DocumentSaveIcon(), g.saveFile),
 				widget.NewToolbarSeparator(),
 				widget.NewToolbarAction(theme.NavigateBackIcon(), func() {
 					i, _ := g.s.current.Get()
