@@ -66,8 +66,6 @@ func (p *parser) Render(_ io.Writer, source []byte, n ast.Node) error {
 				}
 			case "ListItem":
 				p.c.content = append(p.c.content, newBullet(tmpText))
-			case "List":
-				p.list = false
 			}
 			return ast.WalkContinue, p.handleExitNode(n)
 		}
@@ -104,8 +102,11 @@ func (p *parser) Render(_ io.Writer, source []byte, n ast.Node) error {
 }
 
 func (p *parser) handleExitNode(n ast.Node) error {
-	if n.Kind().String() == "Blockquote" {
+	switch n.Kind().String() {
+	case "Blockquote":
 		p.blockquote = false
+	case "List":
+		p.list = false
 	}
 	return nil
 }
@@ -115,15 +116,15 @@ func addTextToSegment(text string, s *string, node ast.Node) ast.WalkStatus {
 	if trimmed == "" {
 		return ast.WalkContinue
 	}
-		next := node.(*ast.Text).NextSibling()
-		if next != nil {
-			if nextText, ok := next.(*ast.Text); ok {
-				if nextText.Segment.Start > node.(*ast.Text).Segment.Stop { // detect presence of a trailing newline
-					trimmed = trimmed + " "
-				}
+	next := node.(*ast.Text).NextSibling()
+	if next != nil {
+		if nextText, ok := next.(*ast.Text); ok {
+			if nextText.Segment.Start > node.(*ast.Text).Segment.Stop { // detect presence of a trailing newline
+				trimmed = trimmed + " "
 			}
 		}
+	}
 
-		*s = *s + trimmed
+	*s = *s + trimmed
 	return 0
 }
