@@ -46,7 +46,6 @@ func (p *parser) AddOptions(...renderer.Option) {}
 
 func (p *parser) Render(_ io.Writer, source []byte, n ast.Node) error {
 	tmpText := ""
-//	m.nextSeg = &TextSegment{}
 	err := ast.Walk(n, func(n ast.Node, entering bool) (ast.WalkStatus, error) {
 		if !entering {
 			switch n.Kind().String() {

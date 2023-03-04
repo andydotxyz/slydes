@@ -17,7 +17,7 @@ func layoutContent(objs []fyne.CanvasObject, scale float32, size fyne.Size, pos 
 	pad := theme.Padding() * scale
 	width := size.Width
 	if splitAt > -1 && len(objs) > 1 {
-		width = (width - pad)/2
+		width = (width - pad) / 2
 	}
 	x := pos.X
 	y := pos.Y
@@ -37,7 +37,7 @@ func layoutContent(objs []fyne.CanvasObject, scale float32, size fyne.Size, pos 
 			if splitAt == 0 {
 				o.Move(fyne.NewPos(pos.X, pos.Y))
 			} else {
-				o.Move(fyne.NewPos(x + width + pad, pos.Y))
+				o.Move(fyne.NewPos(x+width+pad, pos.Y))
 			}
 		} else {
 			o.Move(fyne.NewPos(x, y))

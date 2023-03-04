@@ -36,9 +36,9 @@ func (b *bullet) CreateRenderer() fyne.WidgetRenderer {
 }
 
 func (b *bullet) Resize(size fyne.Size) {
-	b.dot.Move(fyne.NewPos(0, (size.Height - b.dot.Size().Height)/2))
-	b.text.Move(fyne.NewPos(b.dot.Size().Width + theme.Padding()*b.scale, 0))
-	b.text.Resize(fyne.NewSize(size.Width - b.dot.Size().Width - theme.Padding()*b.scale, size.Height))
+	b.dot.Move(fyne.NewPos(0, (size.Height-b.dot.Size().Height)/2))
+	b.text.Move(fyne.NewPos(b.dot.Size().Width+theme.Padding()*b.scale, 0))
+	b.text.Resize(fyne.NewSize(size.Width-b.dot.Size().Width-theme.Padding()*b.scale, size.Height))
 }
 
 func (b *bullet) MinSize() fyne.Size {
