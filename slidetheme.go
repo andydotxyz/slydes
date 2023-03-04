@@ -16,6 +16,10 @@ func (s *slide) themeBackground() fyne.CanvasObject {
 	return container.New(&backgroundLayout{s: s}, bg, top, bottom)
 }
 
+func (s *slide) themeBullet(dot *canvas.Circle, depth int) {
+	dot.FillColor = color.Black
+}
+
 func (s *slide) themeText(text *canvas.Text, style widget.RichTextStyle) {
 	if style == widget.RichTextStyleSubHeading {
 		text.Color = color.Gray{Y: 0x50}

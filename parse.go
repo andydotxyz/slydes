@@ -37,8 +37,7 @@ func parseMarkdown(data string) content {
 }
 
 type parser struct {
-	blockquote  bool
-	heading     bool
+	blockquote, heading, list bool
 
 	c *content
 }
@@ -62,12 +61,22 @@ func (p *parser) Render(_ io.Writer, source []byte, n ast.Node) error {
 				}
 			case "Paragraph":
 				// if p.blockquote // TODO
-				p.c.content = append(p.c.content, canvas.NewText(tmpText, color.Black))
+				if !p.list {
+					p.c.content = append(p.c.content, canvas.NewText(tmpText, color.Black))
+				}
+			case "ListItem":
+				p.c.content = append(p.c.content, newBullet(tmpText))
+			case "List":
+				p.list = false
 			}
 			return ast.WalkContinue, p.handleExitNode(n)
 		}
 
 		switch n.Kind().String() {
+		case "List":
+			p.list = true
+		case "ListItem":
+			tmpText = ""
 		case "Heading":
 			p.heading = true
 			tmpText = ""

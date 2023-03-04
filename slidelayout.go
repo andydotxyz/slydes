@@ -78,6 +78,8 @@ func (s *slide) layoutFallback(size fyne.Size, scale float32) {
 			t.SetMinSize(fyne.NewSize(128*scale, 80*scale)) // TODO remove once we layout properly
 		case *canvas.Text:
 			t.TextSize = theme.TextSize() * scale
+		case slideWidget:
+			t.setScale(scale)
 		}
 		o.Move(fyne.NewPos(pad, y))
 		o.Resize(o.MinSize())
