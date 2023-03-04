@@ -61,7 +61,7 @@ func (p *parser) Render(_ io.Writer, source []byte, n ast.Node) error {
 				}
 			case "Paragraph":
 				// if p.blockquote // TODO
-				if !p.list {
+				if !p.list && tmpText != "" {
 					p.c.content = append(p.c.content, canvas.NewText(tmpText, color.Black))
 				}
 			case "ListItem":

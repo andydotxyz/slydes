@@ -2,7 +2,6 @@ package main
 
 import (
 	"fyne.io/fyne/v2"
-	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/theme"
 )
 
@@ -60,31 +59,20 @@ func (s *slide) layoutFallback(size fyne.Size, scale float32) {
 		s.heading.TextSize = theme.TextHeadingSize() * scale
 		s.heading.Move(fyne.NewPos(pad, pad))
 		s.heading.Refresh()
-		y += s.heading.MinSize().Height + theme.InnerPadding()*scale
+		y += s.heading.MinSize().Height //+ pad
 	}
+	subPad := float32(0)
 	if s.subheading != nil {
 		skip++
 		s.subheading.TextSize = theme.TextSubHeadingSize() * scale
 		s.subheading.Move(fyne.NewPos(pad, y))
 		s.subheading.Refresh()
-		y += s.subheading.MinSize().Height + theme.InnerPadding()*scale
+		subPad = s.subheading.MinSize().Height
 	}
 
-	// TODO split/layout not just stack
-	for _, o := range s.content.Objects[skip:] {
-		switch t := o.(type) {
-		case *canvas.Image:
-			t.FillMode = canvas.ImageFillContain
-			t.SetMinSize(fyne.NewSize(128*scale, 80*scale)) // TODO remove once we layout properly
-		case *canvas.Text:
-			t.TextSize = theme.TextSize() * scale
-		case slideWidget:
-			t.setScale(scale)
-		}
-		o.Move(fyne.NewPos(pad, y))
-		o.Resize(o.MinSize())
-		y += o.MinSize().Height + theme.Padding()*scale
-	}
+	contentSize := size.SubtractWidthHeight(pad*2, size.Height/9*2+subPad+pad*2)
+	contentPos := fyne.NewPos(pad, size.Height/6+subPad+pad)
+	layoutContent(s.content.Objects[skip:], scale, contentSize, contentPos)
 }
 
 func (s *slide) layoutImage(size fyne.Size) {
