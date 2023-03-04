@@ -1,0 +1,120 @@
+package main
+
+import (
+	"image/color"
+	"io"
+	"log"
+	"strings"
+
+	"github.com/yuin/goldmark"
+	"github.com/yuin/goldmark/ast"
+	"github.com/yuin/goldmark/renderer"
+
+	"fyne.io/fyne/v2"
+	"fyne.io/fyne/v2/canvas"
+)
+
+type content struct {
+	heading, subheading string
+	bgpath              string
+
+	content []fyne.CanvasObject
+}
+
+func parseMarkdown(data string) content {
+	c := content{}
+	if data == "" {
+		return c
+	}
+
+	r := &parser{c: &c}
+	md := goldmark.New(goldmark.WithRenderer(r))
+	err := md.Convert([]byte(data), nil)
+	if err != nil {
+		fyne.LogError("Failed to parse markdown", err)
+	}
+	return c
+}
+
+type parser struct {
+	blockquote  bool
+	heading     bool
+
+	c *content
+}
+
+func (p *parser) AddOptions(...renderer.Option) {}
+
+func (p *parser) Render(_ io.Writer, source []byte, n ast.Node) error {
+	tmpText := ""
+//	m.nextSeg = &TextSegment{}
+	err := ast.Walk(n, func(n ast.Node, entering bool) (ast.WalkStatus, error) {
+		if !entering {
+			switch n.Kind().String() {
+			case "Heading":
+				switch n.(*ast.Heading).Level {
+				case 1:
+					p.c.heading = tmpText
+				case 2:
+					p.c.subheading = tmpText
+				default:
+					log.Println("unsupported heading level", n.(*ast.Heading).Level)
+				}
+			case "Paragraph":
+				// if p.blockquote // TODO
+				p.c.content = append(p.c.content, canvas.NewText(tmpText, color.Black))
+			}
+			return ast.WalkContinue, p.handleExitNode(n)
+		}
+
+		switch n.Kind().String() {
+		case "Heading":
+			p.heading = true
+			tmpText = ""
+		case "HorizontalRule", "ThematicBreak": // we won't get this as we're splitting slides
+		case "Paragraph":
+			tmpText = ""
+		case "Text":
+			ret := addTextToSegment(string(n.Text(source)), &tmpText, n)
+			if ret != 0 {
+				return ret, nil
+			}
+		case "Blockquote":
+			p.blockquote = true
+		case "Image":
+			if p.c.heading == "" {
+				p.c.bgpath = string(n.(*ast.Image).Destination)
+			} else {
+				p.c.content = append(p.c.content, canvas.NewImageFromFile(string(n.(*ast.Image).Destination)))
+			}
+		}
+
+		return ast.WalkContinue, nil
+	})
+	return err
+}
+
+func (p *parser) handleExitNode(n ast.Node) error {
+	if n.Kind().String() == "Blockquote" {
+		p.blockquote = false
+	}
+	return nil
+}
+
+func addTextToSegment(text string, s *string, node ast.Node) ast.WalkStatus {
+	trimmed := strings.ReplaceAll(text, "\n", " ") // newline inside paragraph is not newline
+	if trimmed == "" {
+		return ast.WalkContinue
+	}
+		next := node.(*ast.Text).NextSibling()
+		if next != nil {
+			if nextText, ok := next.(*ast.Text); ok {
+				if nextText.Segment.Start > node.(*ast.Text).Segment.Stop { // detect presence of a trailing newline
+					trimmed = trimmed + " "
+				}
+			}
+		}
+
+		*s = *s + trimmed
+	return 0
+}

@@ -43,7 +43,7 @@ func (g *gui) makeUI() fyne.CanvasObject {
 		g.refreshSlide()
 	}))
 
-	g.render = newSlide(widget.NewRichText())
+	g.render = newSlide("")
 	g.content.OnChanged = func(s string) {
 		g.s.parseSource(s)
 		g.slideForCursor()
@@ -114,6 +114,5 @@ func (g *gui) slideForCursor() {
 }
 
 func (g *gui) refreshSlide() {
-	parsed := widget.NewRichTextFromMarkdown(g.s.currentSource())
-	g.render.setSource(parsed)
+	g.render.setSource(g.s.currentSource())
 }

@@ -2,14 +2,13 @@ package main
 
 import (
 	"fmt"
+	"image/color"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
-
-	"image/color"
 )
 
 type slideButton struct {
@@ -38,7 +37,7 @@ func (g *gui) newSlideButton(id int) fyne.CanvasObject {
 		border.StrokeWidth = 0
 	}
 
-	slide := newAspectContainer(newSlide(widget.NewRichTextFromMarkdown(g.s.items[id])), border)
+	slide := newAspectContainer(newSlide(g.s.items[id]), border)
 	button := &slideButton{id: id, content: slide, g: g}
 	button.ExtendBaseWidget(button)
 	return button

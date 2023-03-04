@@ -26,14 +26,14 @@ type slide struct {
 	heading, subheading *canvas.Text
 }
 
-func newSlide(in *widget.RichText) *slide {
+func newSlide(data string) *slide {
 	s := &slide{}
 	s.ExtendBaseWidget(s)
 	s.bg = s.themeBackground()
 	items := []fyne.CanvasObject{s.bg}
 	s.heading = nil
 	s.subheading = nil
-	s.addContent(&items, in.Segments)
+	s.addContent(&items, parseMarkdown(data))
 	s.content = container.NewWithoutLayout(items...)
 	return s
 }
@@ -53,59 +53,41 @@ func (s *slide) MinSize() fyne.Size {
 	return fyne.NewSize(80, 45) // TODO de-duplicate
 }
 
-func (s *slide) addContent(items *[]fyne.CanvasObject, segs []widget.RichTextSegment) {
-	for _, item := range segs {
-		switch seg := item.(type) {
-		case *widget.TextSegment:
-			switch seg.Style {
-			case widget.RichTextStyleHeading:
-				if s.heading != nil {
-					s.heading = nil
-				}
-				s.heading = canvas.NewText(seg.Text, color.Black)
-				s.heading.TextStyle.Bold = true
-				s.themeText(s.heading, seg.Style)
+func (s *slide) addContent(items *[]fyne.CanvasObject, in content) {
+	if in.bgpath != "" {
+		*items = append(*items, canvas.NewImageFromFile(in.bgpath))
+		s.variant = imageSlide
+		return
+	}
 
-				s.variant = headingSlide
-				*items = append(*items, s.heading)
-			case widget.RichTextStyleSubHeading:
-				if s.subheading != nil {
-					s.subheading = nil
-				}
-				s.subheading = canvas.NewText(seg.Text, color.Black)
-				s.subheading.TextStyle.Bold = true
-				s.themeText(s.subheading, seg.Style)
+	if in.heading != "" {
+		s.heading = canvas.NewText(in.heading, color.Black)
+		s.heading.TextStyle.Bold = true
+		s.themeText(s.heading, widget.RichTextStyleHeading)
 
-				s.variant = headingSlide
-				*items = append(*items, s.subheading)
-			default:
-				text := canvas.NewText(seg.Text, color.Black)
-				s.themeText(text, seg.Style)
+		s.variant = headingSlide
+		*items = append(*items, s.heading)
+	}
+	if in.subheading != "" {
+		s.subheading = canvas.NewText(in.subheading, color.Black)
+		s.subheading.TextStyle.Bold = true
+		s.themeText(s.subheading, widget.RichTextStyleSubHeading)
 
-				s.variant = otherSlide
-				*items = append(*items, text)
-			}
-		case *widget.ListSegment:
-			s.addContent(items, seg.Items)
-		case *widget.ParagraphSegment:
-			s.addContent(items, seg.Texts)
-		case *widget.ImageSegment:
-			img := canvas.NewImageFromFile(seg.Source.Path())
-			*items = append(*items, img)
-			if s.heading == nil {
-				s.variant = imageSlide
-			} else {
-				s.variant = otherSlide
-			}
-		}
+		s.variant = headingSlide
+		*items = append(*items, s.subheading)
+	}
+
+	if len(in.content) > 0 {
+		s.variant = otherSlide
+		*items = append(*items, in.content...)
 	}
 }
 
-func (s *slide) setSource(rich *widget.RichText) {
+func (s *slide) setSource(data string) {
 	items := []fyne.CanvasObject{s.bg}
 	s.heading = nil
 	s.subheading = nil
-	s.addContent(&items, rich.Segments)
+	s.addContent(&items, parseMarkdown(data))
 	s.content.Objects = items
 	s.content.Refresh()
 	s.Resize(s.Size())
