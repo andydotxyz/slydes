@@ -10,16 +10,16 @@ func (g *gui) showPresentWindow() {
 	w2 := fyne.CurrentApp().NewWindow("Play")
 
 	items := strings.Split(g.content.Text, "---")
-	content := newSlide(items[0])
+	id, _ := g.s.current.Get()
+	content := newSlide(items[id])
 	w2.SetContent(newAspectContainer(content))
 
-	addPresentationKeys(w2, content, items)
+	addPresentationKeys(w2, content, items, id)
 	w2.SetFullScreen(true)
 	w2.Show()
 }
 
-func addPresentationKeys(w fyne.Window, content *slide, items []string) {
-	id := 0
+func addPresentationKeys(w fyne.Window, content *slide, items []string, id int) {
 	w.Canvas().SetOnTypedKey(func(k *fyne.KeyEvent) {
 		switch k.Name {
 		case fyne.KeyEscape:
