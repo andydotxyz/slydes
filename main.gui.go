@@ -55,6 +55,8 @@ func (g *gui) makeUI() fyne.CanvasObject {
 
 	split := container.NewHSplit(g.content, newAspectContainer(g.render))
 	split.Offset = 0.35
+	play := &primaryAction{widget.NewToolbarAction(theme.MediaPlayIcon(), g.showPresentWindow)}
+
 	return container.NewBorder(
 		container.NewVBox(
 			widget.NewToolbar(
@@ -75,7 +77,7 @@ func (g *gui) makeUI() fyne.CanvasObject {
 						g.moveToSlide(i + 1)
 					}
 				}),
-				widget.NewToolbarAction(theme.MediaPlayIcon(), g.showPresentWindow),
+				play,
 				widget.NewToolbarSpacer(),
 				widget.NewToolbarAction(theme.HelpIcon(), func() {}),
 			),
@@ -115,4 +117,15 @@ func (g *gui) slideForCursor() {
 
 func (g *gui) refreshSlide() {
 	g.render.setSource(g.s.currentSource())
+}
+
+type primaryAction struct {
+	*widget.ToolbarAction
+}
+
+func (t *primaryAction) ToolbarObject() fyne.CanvasObject {
+	button := t.ToolbarAction.ToolbarObject().(*widget.Button)
+	button.Importance = widget.HighImportance
+
+	return button
 }
