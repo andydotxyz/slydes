@@ -15,7 +15,6 @@ type gui struct {
 
 	win fyne.Window
 	s   *slides
-	uri fyne.URI
 }
 
 func newGUI(s *slides, w fyne.Window) *gui {
@@ -43,7 +42,7 @@ func (g *gui) makeUI() fyne.CanvasObject {
 		g.refreshSlide()
 	}))
 
-	g.render = newSlide("")
+	g.render = newSlide("", g.s)
 	g.content.OnChanged = func(s string) {
 		g.s.parseSource(s)
 		g.slideForCursor()

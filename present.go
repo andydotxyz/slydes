@@ -11,7 +11,7 @@ func (g *gui) showPresentWindow() {
 
 	items := strings.Split(g.content.Text, "---")
 	id, _ := g.s.current.Get()
-	content := newSlide(items[id])
+	content := newSlide(items[id], g.s)
 	w2.SetContent(newAspectContainer(content))
 
 	addPresentationKeys(w2, content, items, id)

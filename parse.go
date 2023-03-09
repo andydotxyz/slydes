@@ -4,6 +4,7 @@ import (
 	"image/color"
 	"io"
 	"log"
+	"path/filepath"
 	"strings"
 
 	"github.com/yuin/goldmark"
@@ -12,6 +13,7 @@ import (
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/canvas"
+	"fyne.io/fyne/v2/storage"
 )
 
 type content struct {
@@ -21,13 +23,13 @@ type content struct {
 	content []fyne.CanvasObject
 }
 
-func parseMarkdown(data string) content {
+func (s *slides) parseMarkdown(data string) content {
 	c := content{}
 	if data == "" {
 		return c
 	}
 
-	r := &parser{c: &c}
+	r := &parser{c: &c, parent: s}
 	md := goldmark.New(goldmark.WithRenderer(r))
 	err := md.Convert([]byte(data), nil)
 	if err != nil {
@@ -38,6 +40,7 @@ func parseMarkdown(data string) content {
 
 type parser struct {
 	blockquote, heading, list bool
+	parent *slides
 
 	c *content
 }
@@ -88,10 +91,14 @@ func (p *parser) Render(_ io.Writer, source []byte, n ast.Node) error {
 		case "Blockquote":
 			p.blockquote = true
 		case "Image":
+			name := string(n.(*ast.Image).Destination)
+			path := filepath.Join(p.root(), name)
 			if p.c.heading == "" {
-				p.c.bgpath = string(n.(*ast.Image).Destination)
+				p.c.bgpath = path
 			} else {
-				p.c.content = append(p.c.content, canvas.NewImageFromFile(string(n.(*ast.Image).Destination)))
+				img := canvas.NewImageFromFile(path)
+				img.FillMode = canvas.ImageFillContain
+				p.c.content = append(p.c.content, img)
 			}
 		}
 
@@ -126,4 +133,13 @@ func addTextToSegment(text string, s *string, node ast.Node) ast.WalkStatus {
 
 	*s = *s + trimmed
 	return 0
+}
+
+func (p *parser) root() string {
+	if p.parent.uri == nil {
+		return ""
+	}
+
+	dir, _ := storage.Parent(p.parent.uri)
+	return dir.Path()
 }

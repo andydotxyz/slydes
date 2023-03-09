@@ -4,11 +4,13 @@ import (
 	"bufio"
 	"strings"
 
+	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/data/binding"
 )
 
 type slides struct {
 	count, current binding.Int
+	uri fyne.URI
 
 	divideRows []int
 	items      []string

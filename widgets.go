@@ -37,7 +37,7 @@ func (g *gui) newSlideButton(id int) fyne.CanvasObject {
 		border.StrokeWidth = 0
 	}
 
-	slide := newAspectContainer(newSlide(g.s.items[id]), border)
+	slide := newAspectContainer(newSlide(g.s.items[id], g.s), border)
 	button := &slideButton{id: id, content: slide, g: g}
 	button.ExtendBaseWidget(button)
 	return button

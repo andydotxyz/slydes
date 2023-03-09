@@ -20,20 +20,21 @@ const (
 type slide struct {
 	widget.BaseWidget
 	variant slideType
+	parent  *slides
 
 	content             *fyne.Container
 	bg                  fyne.CanvasObject
 	heading, subheading *canvas.Text
 }
 
-func newSlide(data string) *slide {
-	s := &slide{}
+func newSlide(data string, parent *slides) *slide {
+	s := &slide{parent: parent}
 	s.ExtendBaseWidget(s)
 	s.bg = s.themeBackground()
 	items := []fyne.CanvasObject{s.bg}
 	s.heading = nil
 	s.subheading = nil
-	s.addContent(&items, parseMarkdown(data))
+	s.addContent(&items, parent.parseMarkdown(data))
 	s.content = container.NewWithoutLayout(items...)
 	return s
 }
@@ -87,7 +88,7 @@ func (s *slide) setSource(data string) {
 	items := []fyne.CanvasObject{s.bg}
 	s.heading = nil
 	s.subheading = nil
-	s.addContent(&items, parseMarkdown(data))
+	s.addContent(&items, s.parent.parseMarkdown(data))
 	s.content.Objects = items
 	s.content.Refresh()
 	s.Resize(s.Size())

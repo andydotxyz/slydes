@@ -11,6 +11,7 @@ import (
 func (g *gui) clearFile() {
 	dialog.ShowConfirm("Clear content", "Are you sure you want to reset your slide content", func(ok bool) {
 		if ok {
+			g.s.uri = nil
 			g.content.SetText("# Slide 1")
 		}
 	}, g.win)
@@ -32,15 +33,15 @@ func (g *gui) openFile() {
 		if err != nil {
 			dialog.ShowError(err, g.win)
 		} else {
-			g.uri = r.URI()
+			g.s.uri = r.URI()
 			g.content.SetText(string(data))
 		}
 	}, g.win)
 }
 
 func (g *gui) saveFile() {
-	if g.uri != nil {
-		w, err := storage.Writer(g.uri)
+	if g.s.uri != nil {
+		w, err := storage.Writer(g.s.uri)
 		if err != nil {
 			dialog.ShowError(err, g.win)
 			return
@@ -66,6 +67,6 @@ func (g *gui) saveFile() {
 		if err != nil {
 			dialog.ShowError(err, g.win)
 		}
-		g.uri = w.URI()
+		g.s.uri = w.URI()
 	}, g.win)
 }
