@@ -56,7 +56,9 @@ func (s *slide) MinSize() fyne.Size {
 
 func (s *slide) addContent(items *[]fyne.CanvasObject, in content) {
 	if in.bgpath != "" {
-		*items = append(*items, canvas.NewImageFromFile(in.bgpath))
+		img := canvas.NewImageFromFile(in.bgpath)
+		img.ScaleMode = canvas.ImageScaleFastest
+		*items = append(*items, img)
 		s.variant = imageSlide
 		return
 	}
