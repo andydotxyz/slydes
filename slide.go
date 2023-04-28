@@ -84,6 +84,9 @@ func (s *slide) addContent(items *[]fyne.CanvasObject, in content) {
 
 	for _, o := range *items {
 		if t, ok := o.(*canvas.Text); ok {
+			if t == s.heading || t == s.subheading {
+				continue
+			}
 			t.Color = s.parent.theme.Color(theme.ColorNameForeground, theme.VariantLight)
 		}
 	}

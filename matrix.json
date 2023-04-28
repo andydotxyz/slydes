@@ -1,0 +1,13 @@
+{
+  "Colors": {
+    "background": "#111111ff",
+    "foreground": "#999999ff",
+    "bullet": "#999999ff",
+    "header": "#003300ff",
+    "subHeader": "#336699ff",
+    "headerBackground": "#00ff0099"
+  },
+  "Sizes": {
+    "iconInline": 10.0
+  }
+}

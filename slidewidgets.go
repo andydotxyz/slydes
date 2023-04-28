@@ -34,6 +34,17 @@ func (b *bullet) CreateRenderer() fyne.WidgetRenderer {
 	return widget.NewSimpleRenderer(container.NewWithoutLayout(b.dot, b.text))
 }
 
+func (b *bullet) Refresh() {
+	if b.dot != nil {
+		b.dot.FillColor = b.theme.Color(colorNameBullet, theme.VariantLight)
+		b.dot.Refresh()
+	}
+	if b.text != nil {
+		b.text.Color = b.theme.Color(colorNameBullet, theme.VariantLight)
+		b.text.Refresh()
+	}
+}
+
 func (b *bullet) Resize(size fyne.Size) {
 	b.dot.Move(fyne.NewPos(0, (size.Height-b.dot.Size().Height)/2))
 	b.text.Move(fyne.NewPos(b.dot.Size().Width+theme.Padding()*b.scale, 0))

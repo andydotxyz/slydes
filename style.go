@@ -25,7 +25,7 @@ func (s *slideTheme) Color(n fyne.ThemeColorName, v fyne.ThemeVariant) color.Col
 	case theme.ColorNameBackground:
 		return color.White
 	case colorNameHeader:
-		return color.White
+		return color.Gray{Y: 0x20}
 	case colorNameSubHeader:
 		return color.Gray{Y: 0x50}
 	case colorNameHeaderBackground:
