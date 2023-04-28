@@ -8,9 +8,9 @@ import (
 )
 
 func (s *slide) themeBackground() fyne.CanvasObject {
-	bg := canvas.NewRectangle(s.theme.Color(theme.ColorNameBackground, theme.VariantLight))
-	top := canvas.NewRectangle(s.theme.Color(colorNameHeaderBackground, theme.VariantLight))
-	bottom := canvas.NewRectangle(s.theme.Color(colorNameHeaderBackground, theme.VariantLight))
+	bg := canvas.NewRectangle(s.parent.theme.Color(theme.ColorNameBackground, theme.VariantLight))
+	top := canvas.NewRectangle(s.parent.theme.Color(colorNameHeaderBackground, theme.VariantLight))
+	bottom := canvas.NewRectangle(s.parent.theme.Color(colorNameHeaderBackground, theme.VariantLight))
 	return container.New(&backgroundLayout{s: s}, bg, top, bottom)
 }
 

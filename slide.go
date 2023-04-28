@@ -24,20 +24,17 @@ type slide struct {
 	content             *fyne.Container
 	bg                  fyne.CanvasObject
 	heading, subheading *canvas.Text
-
-	theme fyne.Theme
 }
 
 func newSlide(data string, parent *slides) *slide {
 	s := &slide{parent: parent}
 	s.ExtendBaseWidget(s)
-	s.theme = &slideTheme{Theme: theme.DefaultTheme()}
 
 	s.bg = s.themeBackground()
 	items := []fyne.CanvasObject{s.bg}
 	s.heading = nil
 	s.subheading = nil
-	s.addContent(&items, parent.parseMarkdown(data, s.theme))
+	s.addContent(&items, parent.parseMarkdown(data))
 	s.content = container.NewWithoutLayout(items...)
 	return s
 }
@@ -67,13 +64,13 @@ func (s *slide) addContent(items *[]fyne.CanvasObject, in content) {
 	}
 
 	if in.heading != "" {
-		s.heading = canvas.NewText(in.heading, s.theme.Color(colorNameHeader, theme.VariantLight))
+		s.heading = canvas.NewText(in.heading, s.parent.theme.Color(colorNameHeader, theme.VariantLight))
 		s.heading.TextStyle.Bold = true
 		s.variant = headingSlide
 		*items = append(*items, s.heading)
 	}
 	if in.subheading != "" {
-		s.subheading = canvas.NewText(in.subheading, s.theme.Color(colorNameSubHeader, theme.VariantLight))
+		s.subheading = canvas.NewText(in.subheading, s.parent.theme.Color(colorNameSubHeader, theme.VariantLight))
 		s.subheading.TextStyle.Bold = true
 
 		s.variant = headingSlide
@@ -87,16 +84,17 @@ func (s *slide) addContent(items *[]fyne.CanvasObject, in content) {
 
 	for _, o := range *items {
 		if t, ok := o.(*canvas.Text); ok {
-			t.Color = s.theme.Color(theme.ColorNameForeground, theme.VariantLight)
+			t.Color = s.parent.theme.Color(theme.ColorNameForeground, theme.VariantLight)
 		}
 	}
 }
 
 func (s *slide) setSource(data string) {
+	s.bg = s.themeBackground()
 	items := []fyne.CanvasObject{s.bg}
 	s.heading = nil
 	s.subheading = nil
-	s.addContent(&items, s.parent.parseMarkdown(data, s.theme))
+	s.addContent(&items, s.parent.parseMarkdown(data))
 	s.content.Objects = items
 	s.content.Refresh()
 	s.Resize(s.Size())
