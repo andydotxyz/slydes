@@ -10,7 +10,7 @@ import (
 
 type slides struct {
 	count, current binding.Int
-	uri fyne.URI
+	uri            fyne.URI
 
 	divideRows []int
 	items      []string

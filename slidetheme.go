@@ -1,31 +1,17 @@
 package main
 
 import (
-	"image/color"
-
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/container"
-	"fyne.io/fyne/v2/widget"
+	"fyne.io/fyne/v2/theme"
 )
 
 func (s *slide) themeBackground() fyne.CanvasObject {
-	bg := canvas.NewRectangle(color.White)
-	top := canvas.NewRectangle(color.Gray{Y: 0xC0})
-	bottom := canvas.NewRectangle(color.Gray{Y: 0xC0})
+	bg := canvas.NewRectangle(s.theme.Color(theme.ColorNameBackground, theme.VariantLight))
+	top := canvas.NewRectangle(s.theme.Color(colorNameHeaderBackground, theme.VariantLight))
+	bottom := canvas.NewRectangle(s.theme.Color(colorNameHeaderBackground, theme.VariantLight))
 	return container.New(&backgroundLayout{s: s}, bg, top, bottom)
-}
-
-func (s *slide) themeBullet(dot *canvas.Circle, depth int) {
-	dot.FillColor = color.Black
-}
-
-func (s *slide) themeText(text *canvas.Text, style widget.RichTextStyle) {
-	if style == widget.RichTextStyleSubHeading {
-		text.Color = color.Gray{Y: 0x50}
-		return
-	}
-	text.Color = color.Black
 }
 
 type backgroundLayout struct {

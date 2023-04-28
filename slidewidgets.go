@@ -1,8 +1,6 @@
 package main
 
 import (
-	"image/color"
-
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/container"
@@ -17,6 +15,7 @@ type slideWidget interface {
 
 type bullet struct {
 	widget.BaseWidget
+	theme fyne.Theme
 
 	content string
 	scale   float32
@@ -25,13 +24,13 @@ type bullet struct {
 	text *canvas.Text
 }
 
-func newBullet(txt string) *bullet {
-	return &bullet{content: txt, scale: 1}
+func newBullet(txt string, th fyne.Theme) *bullet {
+	return &bullet{theme: th, content: txt, scale: 1}
 }
 
 func (b *bullet) CreateRenderer() fyne.WidgetRenderer {
-	b.dot = canvas.NewCircle(color.Black)
-	b.text = canvas.NewText(b.content, color.Black)
+	b.dot = canvas.NewCircle(b.theme.Color(colorNameBullet, theme.VariantLight))
+	b.text = canvas.NewText(b.content, b.theme.Color(colorNameBullet, theme.VariantLight))
 	return widget.NewSimpleRenderer(container.NewWithoutLayout(b.dot, b.text))
 }
 

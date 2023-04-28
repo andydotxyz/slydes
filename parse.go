@@ -23,13 +23,13 @@ type content struct {
 	content []fyne.CanvasObject
 }
 
-func (s *slides) parseMarkdown(data string) content {
+func (s *slides) parseMarkdown(data string, th fyne.Theme) content {
 	c := content{}
 	if data == "" {
 		return c
 	}
 
-	r := &parser{c: &c, parent: s}
+	r := &parser{c: &c, parent: s, theme: th}
 	md := goldmark.New(goldmark.WithRenderer(r))
 	err := md.Convert([]byte(data), nil)
 	if err != nil {
@@ -40,9 +40,10 @@ func (s *slides) parseMarkdown(data string) content {
 
 type parser struct {
 	blockquote, heading, list bool
-	parent *slides
+	parent                    *slides
 
-	c *content
+	c     *content
+	theme fyne.Theme
 }
 
 func (p *parser) AddOptions(...renderer.Option) {}
@@ -67,7 +68,7 @@ func (p *parser) Render(_ io.Writer, source []byte, n ast.Node) error {
 					p.c.content = append(p.c.content, canvas.NewText(tmpText, color.Black))
 				}
 			case "ListItem":
-				p.c.content = append(p.c.content, newBullet(tmpText))
+				p.c.content = append(p.c.content, newBullet(tmpText, p.theme))
 			}
 			return ast.WalkContinue, p.handleExitNode(n)
 		}

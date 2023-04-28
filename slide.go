@@ -1,11 +1,10 @@
 package main
 
 import (
-	"image/color"
-
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/container"
+	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
 )
 
@@ -25,16 +24,20 @@ type slide struct {
 	content             *fyne.Container
 	bg                  fyne.CanvasObject
 	heading, subheading *canvas.Text
+
+	theme fyne.Theme
 }
 
 func newSlide(data string, parent *slides) *slide {
 	s := &slide{parent: parent}
 	s.ExtendBaseWidget(s)
+	s.theme = &slideTheme{Theme: theme.DefaultTheme()}
+
 	s.bg = s.themeBackground()
 	items := []fyne.CanvasObject{s.bg}
 	s.heading = nil
 	s.subheading = nil
-	s.addContent(&items, parent.parseMarkdown(data))
+	s.addContent(&items, parent.parseMarkdown(data, s.theme))
 	s.content = container.NewWithoutLayout(items...)
 	return s
 }
@@ -64,17 +67,14 @@ func (s *slide) addContent(items *[]fyne.CanvasObject, in content) {
 	}
 
 	if in.heading != "" {
-		s.heading = canvas.NewText(in.heading, color.Black)
+		s.heading = canvas.NewText(in.heading, s.theme.Color(colorNameHeader, theme.VariantLight))
 		s.heading.TextStyle.Bold = true
-		s.themeText(s.heading, widget.RichTextStyleHeading)
-
 		s.variant = headingSlide
 		*items = append(*items, s.heading)
 	}
 	if in.subheading != "" {
-		s.subheading = canvas.NewText(in.subheading, color.Black)
+		s.subheading = canvas.NewText(in.subheading, s.theme.Color(colorNameSubHeader, theme.VariantLight))
 		s.subheading.TextStyle.Bold = true
-		s.themeText(s.subheading, widget.RichTextStyleSubHeading)
 
 		s.variant = headingSlide
 		*items = append(*items, s.subheading)
@@ -84,13 +84,19 @@ func (s *slide) addContent(items *[]fyne.CanvasObject, in content) {
 		s.variant = otherSlide
 		*items = append(*items, in.content...)
 	}
+
+	for _, o := range *items {
+		if t, ok := o.(*canvas.Text); ok {
+			t.Color = s.theme.Color(theme.ColorNameForeground, theme.VariantLight)
+		}
+	}
 }
 
 func (s *slide) setSource(data string) {
 	items := []fyne.CanvasObject{s.bg}
 	s.heading = nil
 	s.subheading = nil
-	s.addContent(&items, s.parent.parseMarkdown(data))
+	s.addContent(&items, s.parent.parseMarkdown(data, s.theme))
 	s.content.Objects = items
 	s.content.Refresh()
 	s.Resize(s.Size())
