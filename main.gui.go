@@ -62,6 +62,7 @@ func (g *gui) makeUI() fyne.CanvasObject {
 				widget.NewToolbarAction(theme.FileIcon(), g.clearFile),
 				widget.NewToolbarAction(theme.FolderOpenIcon(), g.openFile),
 				widget.NewToolbarAction(theme.DocumentSaveIcon(), g.saveFile),
+				widget.NewToolbarAction(theme.DocumentPrintIcon(), g.exportFile),
 				widget.NewToolbarSeparator(),
 				widget.NewToolbarAction(theme.NavigateBackIcon(), func() {
 					i, _ := g.s.current.Get()

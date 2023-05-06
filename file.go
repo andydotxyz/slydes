@@ -1,7 +1,10 @@
 package main
 
 import (
+	"fmt"
 	"io/ioutil"
+	"path/filepath"
+	"strings"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/dialog"
@@ -15,6 +18,41 @@ func (g *gui) clearFile() {
 			g.content.SetText("# Slide 1")
 		}
 	}, g.win)
+}
+
+func (g *gui) exportFile() {
+	d := dialog.NewFileSave(func(w fyne.URIWriteCloser, err error) {
+		if err != nil {
+			dialog.ShowError(err, g.win)
+			return
+		}
+		if w == nil {
+			return
+		}
+
+		err = export(g.s, w)
+		_ = w.Close()
+
+		if err != nil {
+			dialog.ShowError(err, g.win)
+		} else {
+			dialog.ShowInformation("Print to PDF", fmt.Sprintf("Printing to %s completed", w.URI().Name()), g.win)
+		}
+	}, g.win)
+
+	name := "Untitled.md"
+	if g.s.uri != nil {
+		name = g.s.uri.Name()
+
+		parent, err := storage.Parent(g.s.uri)
+		dir, err := storage.ListerForURI(parent)
+		if err == nil {
+			d.SetLocation(dir)
+		}
+	}
+	name = strings.ReplaceAll(name, filepath.Ext(name), ".pdf")
+	d.SetFileName(name)
+	d.Show()
 }
 
 func (g *gui) openFile() {
