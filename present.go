@@ -1,15 +1,13 @@
 package main
 
 import (
-	"strings"
-
 	"fyne.io/fyne/v2"
 )
 
 func (g *gui) showPresentWindow() {
 	w2 := fyne.CurrentApp().NewWindow("Play")
 
-	items := strings.Split(g.content.Text, "---")
+	items := g.s.items
 	id, _ := g.s.current.Get()
 	content := newSlide(items[id], g.s)
 	w2.SetContent(newAspectContainer(content))
