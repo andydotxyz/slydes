@@ -1,8 +1,14 @@
 package main
 
 import (
+	"flag"
+	"io/ioutil"
+	"os"
+
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
+	"fyne.io/fyne/v2/dialog"
+	"fyne.io/fyne/v2/storage"
 )
 
 func main() {
@@ -14,5 +20,22 @@ func main() {
 	g := newGUI(s, w)
 	w.SetContent(g.makeUI())
 	w.Canvas().Focus(g.content)
+
+	flag.Parse()
+	if len(flag.Args()) > 0 {
+		path := flag.Args()[0]
+
+		f, _ := os.Open(path)
+		data, err := ioutil.ReadAll(f)
+		_ = f.Close()
+
+		if err != nil {
+			dialog.ShowError(err, g.win)
+		} else {
+			g.s.uri = storage.NewFileURI(path)
+			g.content.SetText(string(data))
+		}
+	}
+
 	w.ShowAndRun()
 }
