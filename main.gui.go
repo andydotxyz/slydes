@@ -1,6 +1,8 @@
 package main
 
 import (
+	"image/color"
+
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/container"
@@ -23,8 +25,13 @@ func newGUI(s *slides, w fyne.Window) *gui {
 
 func (g *gui) makeUI() fyne.CanvasObject {
 	g.content = widget.NewMultiLineEntry()
+	border := canvas.NewRectangle(color.Transparent)
+	border.StrokeColor = theme.PrimaryColor()
+	border.StrokeWidth = 2
+	border.CornerRadius = theme.InputRadiusSize()
 
-	previews := container.NewGridWithRows(1)
+	grid := container.NewGridWithRows(1)
+	cellSize := fyne.NewSize(0, 0)
 	refreshPreviews := func() {
 		count, _ := g.s.count.Get()
 		items := make([]fyne.CanvasObject, count)
@@ -32,21 +39,40 @@ func (g *gui) makeUI() fyne.CanvasObject {
 			slide := g.newSlideButton(i)
 			items[i] = container.NewPadded(slide)
 		}
-		previews.Objects = items
-		previews.Refresh()
+		grid.Objects = items
+		cellSize = grid.Objects[0].MinSize()
+		height := cellSize.Height - 4
+		border.Resize(fyne.NewSize(height*16.0/9.0-3, height))
+		grid.Refresh()
 	}
+
+	previews := container.NewStack(grid, container.NewWithoutLayout(border))
 	refreshPreviews()
-	g.s.count.AddListener(binding.NewDataListener(refreshPreviews))
+	moveHighlight := func(anim bool) {
+		i, _ := g.s.current.Get()
+		dest := fyne.NewPos(cellSize.Width*float32(i)+(theme.Padding()*float32(i-1))+6, 2)
+
+		if !anim {
+			border.Move(dest)
+			return
+		}
+
+		canvas.NewPositionAnimation(border.Position(), dest, canvas.DurationShort, func(p fyne.Position) {
+			border.Move(p)
+		}).Start()
+	}
+	moveHighlight(false)
 	g.s.current.AddListener(binding.NewDataListener(func() {
-		refreshPreviews()
+		moveHighlight(true)
 		g.refreshSlide()
 	}))
 
 	g.render = newSlide("", g.s)
 	g.content.OnChanged = func(s string) {
 		g.s.parseSource(s)
-		g.slideForCursor()
 		refreshPreviews()
+		g.slideForCursor()
+		moveHighlight(true)
 		g.refreshSlide()
 	}
 	g.content.OnCursorChanged = g.slideForCursor
@@ -81,7 +107,7 @@ func (g *gui) makeUI() fyne.CanvasObject {
 				widget.NewToolbarSpacer(),
 				widget.NewToolbarAction(theme.HelpIcon(), func() {}),
 			),
-			container.NewHScroll(container.NewMax(
+			container.NewHScroll(container.NewStack(
 				canvas.NewRectangle(theme.MenuBackgroundColor()),
 				container.NewHBox(previews)))),
 		nil,

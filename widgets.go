@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"image/color"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/canvas"
@@ -19,8 +18,8 @@ type slideButton struct {
 }
 
 func (s *slideButton) CreateRenderer() fyne.WidgetRenderer {
-	num := fmt.Sprintf("%d:", s.id+1)
-	return widget.NewSimpleRenderer(container.NewHBox(container.NewVBox(canvas.NewText(num, theme.ForegroundColor())), s.content))
+	num := fmt.Sprintf(" %d", s.id+1)
+	return widget.NewSimpleRenderer(container.NewStack(s.content, container.NewVBox(canvas.NewText(num, theme.BackgroundColor()))))
 }
 
 func (s *slideButton) Tapped(_ *fyne.PointEvent) {
@@ -28,16 +27,7 @@ func (s *slideButton) Tapped(_ *fyne.PointEvent) {
 }
 
 func (g *gui) newSlideButton(id int) fyne.CanvasObject {
-	border := canvas.NewRectangle(color.Transparent)
-	border.StrokeColor = theme.PrimaryColor()
-	c, _ := g.s.current.Get()
-	if c == id {
-		border.StrokeWidth = 2
-	} else {
-		border.StrokeWidth = 0
-	}
-
-	slide := newAspectContainer(newSlide(g.s.items[id], g.s), border)
+	slide := newAspectContainer(newSlide(g.s.items[id], g.s))
 	button := &slideButton{id: id, content: slide, g: g}
 	button.ExtendBaseWidget(button)
 	return button
