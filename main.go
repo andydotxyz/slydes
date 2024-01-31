@@ -22,7 +22,7 @@ func main() {
 	w.Canvas().Focus(g.content)
 
 	flag.Parse()
-	if len(flag.Args()) > 0 {
+	if len(flag.Args()) > 0 && len(flag.Args()[0]) > 0 {
 		path := flag.Args()[0]
 
 		f, _ := os.Open(path)
