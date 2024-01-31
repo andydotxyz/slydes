@@ -95,7 +95,7 @@ func (s *slides) parseHeader(blob string) (c config) {
 	s.theme = &slideTheme{Theme: theme.DefaultTheme()}
 
 	if c.Theme != "" {
-		path := filepath.Join(".", c.Theme+".json")
+		path := filepath.Join(filepath.Dir(s.uri.Path()), c.Theme+".json")
 
 		f, err := os.Open(path)
 		if err == nil {
