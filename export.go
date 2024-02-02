@@ -9,10 +9,11 @@ import (
 	"os"
 	"strconv"
 
+	"github.com/go-pdf/fpdf"
+
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/test"
-	"github.com/go-pdf/fpdf"
 )
 
 var imgID int // each image needs a unique name
@@ -120,8 +121,22 @@ func renderObjectsToPDF(doc *fpdf.Fpdf, o fyne.CanvasObject, off fyne.Position) 
 		}
 		doc.Circle(float64(x+r), float64(y+r), float64(r), style)
 	case *canvas.Image:
+		size := c.Size()
 		x, y := c.Position().Add(off).Components()
-		w, h := c.Size().Components()
+		w, h := size.Components()
+
+		if c.FillMode == canvas.ImageFillContain {
+			imageAspect := c.Aspect()
+			viewAspect := size.Width / size.Height
+
+			if viewAspect > imageAspect {
+				w = size.Height * imageAspect
+				x += (size.Width - w) / 2
+			} else if viewAspect < imageAspect {
+				h = size.Width / imageAspect
+				y += (size.Height - h) / 2
+			}
+		}
 
 		imgID++
 		name := strconv.Itoa(imgID) + ".png" // a unique name in case any filename collides
