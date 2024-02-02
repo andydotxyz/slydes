@@ -4,6 +4,7 @@ import (
 	"flag"
 	"io/ioutil"
 	"os"
+	"path/filepath"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
@@ -32,7 +33,8 @@ func main() {
 		if err != nil {
 			dialog.ShowError(err, g.win)
 		} else {
-			g.s.uri = storage.NewFileURI(path)
+			absPath, _ := filepath.Abs(path)
+			g.s.uri = storage.NewFileURI(absPath)
 			g.content.SetText(string(data))
 		}
 	}
