@@ -9,6 +9,7 @@ import (
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/dialog"
 	"fyne.io/fyne/v2/storage"
+	"fyne.io/fyne/v2/widget"
 )
 
 func (g *gui) clearFile() {
@@ -30,8 +31,14 @@ func (g *gui) exportFile() {
 			return
 		}
 
+		a := widget.NewActivity()
+		d := dialog.NewCustomWithoutButtons("Printing", a, g.win)
+		a.Start()
+		d.Show()
 		err = export(g.s, w)
 		_ = w.Close()
+		d.Hide()
+		a.Stop()
 
 		if err != nil {
 			dialog.ShowError(err, g.win)
