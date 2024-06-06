@@ -52,6 +52,10 @@ func (g *gui) exportFile() {
 		name = g.s.uri.Name()
 
 		parent, err := storage.Parent(g.s.uri)
+		if err != nil {
+			fyne.LogError("Failed to get presentation parent", err)
+			return
+		}
 		dir, err := storage.ListerForURI(parent)
 		if err == nil {
 			d.SetLocation(dir)

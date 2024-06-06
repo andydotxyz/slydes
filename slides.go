@@ -76,7 +76,7 @@ func (s *slides) parseSource(in string) {
 	_ = s.count.Set(len(items))
 	id, _ = s.current.Get()
 	if id >= len(items) {
-		id = len(items) - 1
+		_ = s.current.Set(id)
 	}
 	s.items = items
 	s.divideRows = breaks
