@@ -2,6 +2,7 @@ package main
 
 import (
 	"image/color"
+	"time"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/canvas"
@@ -17,6 +18,8 @@ type gui struct {
 
 	win fyne.Window
 	s   *slides
+
+	refresh bool
 }
 
 func newGUI(s *slides, w fyne.Window) *gui {
@@ -47,7 +50,7 @@ func (g *gui) makeUI() fyne.CanvasObject {
 	}
 
 	previews := container.NewStack(grid, container.NewWithoutLayout(border))
-	refreshPreviews()
+	go refreshPreviews()
 	moveHighlight := func(anim bool) {
 		i, _ := g.s.current.Get()
 		dest := fyne.NewPos(cellSize.Width*float32(i)+(theme.Padding()*float32(i-1))+6, 2)
@@ -69,11 +72,7 @@ func (g *gui) makeUI() fyne.CanvasObject {
 
 	g.render = newSlide("", g.s)
 	g.content.OnChanged = func(s string) {
-		g.s.parseSource(s)
-		refreshPreviews()
-		g.slideForCursor()
-		moveHighlight(true)
-		g.refreshSlide()
+		g.refresh = true
 	}
 	g.content.OnCursorChanged = g.slideForCursor
 	g.content.SetText("# Slide 1")
@@ -81,6 +80,22 @@ func (g *gui) makeUI() fyne.CanvasObject {
 	split := container.NewHSplit(g.content, newAspectContainer(g.render))
 	split.Offset = 0.35
 	play := &primaryAction{widget.NewToolbarAction(theme.MediaPlayIcon(), g.showPresentWindow)}
+
+	go func() {
+		for {
+			time.Sleep(time.Second / 10)
+			if !g.refresh {
+				continue
+			}
+			g.refresh = false
+
+			g.s.parseSource(g.content.Text)
+			go refreshPreviews()
+			g.slideForCursor()
+			moveHighlight(true)
+			g.refreshSlide()
+		}
+	}()
 
 	return container.NewBorder(
 		container.NewVBox(
