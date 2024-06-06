@@ -19,9 +19,12 @@ import (
 var imgID int // each image needs a unique name
 
 func export(s *slides, w io.Writer) error {
-	doc := fpdf.New("L", "pt", "A4", "")
+	doc := fpdf.NewCustom(&fpdf.InitType{
+		Size:    fpdf.SizeType{Wd: 1600, Ht: 900},
+		UnitStr: fpdf.UnitPoint,
+	})
 	pageWidth, totalHeight := doc.GetPageSize()
-	pageHeight := pageWidth * (9.0 / 16.0) // TODO make a custom size rather than fitting...
+	pageHeight := pageWidth * (9.0 / 16.0)
 	for _, item := range s.items {
 		doc.AddPage()
 
