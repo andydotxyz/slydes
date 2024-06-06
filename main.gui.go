@@ -49,11 +49,22 @@ func (g *gui) makeUI() fyne.CanvasObject {
 		grid.Refresh()
 	}
 
+	var previewScroll *container.Scroll
 	previews := container.NewStack(grid, container.NewWithoutLayout(border))
 	go refreshPreviews()
 	moveHighlight := func(anim bool) {
 		i, _ := g.s.current.Get()
 		dest := fyne.NewPos(cellSize.Width*float32(i)+(theme.Padding()*float32(i-1))+6, 2)
+
+		if previewScroll != nil {
+			if dest.X < previewScroll.Offset.X {
+				previewScroll.Offset.X = dest.X
+				previewScroll.Refresh()
+			} else if dest.X+border.Size().Width > previewScroll.Offset.X+previewScroll.Size().Width {
+				previewScroll.Offset.X = dest.X + border.Size().Width - previewScroll.Size().Width
+				previewScroll.Refresh()
+			}
+		}
 
 		if !anim {
 			border.Move(dest)
@@ -97,6 +108,10 @@ func (g *gui) makeUI() fyne.CanvasObject {
 		}
 	}()
 
+	previewScroll = container.NewHScroll(container.NewStack(
+		canvas.NewRectangle(theme.MenuBackgroundColor()),
+		container.NewHBox(previews)))
+
 	return container.NewBorder(
 		container.NewVBox(
 			widget.NewToolbar(
@@ -122,9 +137,7 @@ func (g *gui) makeUI() fyne.CanvasObject {
 				widget.NewToolbarSpacer(),
 				widget.NewToolbarAction(theme.HelpIcon(), func() {}),
 			),
-			container.NewHScroll(container.NewStack(
-				canvas.NewRectangle(theme.MenuBackgroundColor()),
-				container.NewHBox(previews)))),
+			previewScroll),
 		nil,
 		nil,
 		nil,
@@ -139,8 +152,10 @@ func (g *gui) moveToSlide(id int) {
 		div := g.s.divideRows[id-1]
 		g.content.CursorRow = div + 1
 	}
+	g.content.Refresh()
 
 	g.win.Canvas().Focus(g.content)
+	_ = g.s.current.Set(id)
 }
 
 func (g *gui) slideForCursor() {
