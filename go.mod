@@ -3,14 +3,14 @@ module slydes
 go 1.17
 
 require (
-	fyne.io/fyne/v2 v2.4.6-0.20240603133300-d41f1e22dc25
+	fyne.io/fyne/v2 v2.4.6-0.20240608200849-44fa9f678070
 	github.com/BurntSushi/toml v1.4.0
 	github.com/go-pdf/fpdf v0.8.0
 	github.com/yuin/goldmark v1.7.1
 )
 
 require (
-	fyne.io/systray v1.10.1-0.20231230205326-d160fd363db9 // indirect
+	fyne.io/systray v1.10.1-0.20240608091126-03c78c0eeffd // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/fredbi/uri v1.1.0 // indirect
 	github.com/fsnotify/fsnotify v1.7.0 // indirect
