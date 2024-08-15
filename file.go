@@ -67,7 +67,7 @@ func (g *gui) exportFile() {
 }
 
 func (g *gui) openFile() {
-	dialog.ShowFileOpen(func(r fyne.URIReadCloser, err error) {
+	d := dialog.NewFileOpen(func(r fyne.URIReadCloser, err error) {
 		if err != nil {
 			dialog.ShowError(err, g.win)
 			return
@@ -86,6 +86,8 @@ func (g *gui) openFile() {
 			g.content.SetText(string(data))
 		}
 	}, g.win)
+	d.SetFilter(storage.NewExtensionFileFilter([]string{".md"}))
+	d.Show()
 }
 
 func (g *gui) saveFile() {
