@@ -75,7 +75,7 @@ func renderObjectsToPDF(doc *fpdf.Fpdf, o fyne.CanvasObject, off fyne.Position) 
 		doc.SetTextColor(int(r>>8), int(g>>8), int(b>>8))
 
 		x, y := c.Position().Add(off).Components()
-		size, base := fyne.CurrentApp().Driver().RenderedTextSize(c.Text, c.TextSize, c.TextStyle)
+		size, base := fyne.CurrentApp().Driver().RenderedTextSize(c.Text, c.TextSize, c.TextStyle, c.FontSource)
 		style := ""
 		if c.TextStyle.Bold {
 			style += "B"
