@@ -3,11 +3,14 @@ package main
 import (
 	"bytes"
 	"image/color"
+	"image/jpeg"
 	"image/png"
 	"io"
 	"log"
 	"os"
+	"path/filepath"
 	"strconv"
+	"strings"
 
 	"github.com/go-pdf/fpdf"
 
@@ -124,6 +127,16 @@ func renderObjectsToPDF(doc *fpdf.Fpdf, o fyne.CanvasObject, off fyne.Position) 
 		}
 		doc.Circle(float64(x+r), float64(y+r), float64(r), style)
 	case *canvas.Image:
+		ext := ""
+		if c.File != "" {
+			ext = strings.ToLower(filepath.Ext(c.File))
+		} else if c.Resource != nil {
+			ext = strings.ToLower(filepath.Ext(c.Resource.Name()))
+		}
+		imgType := "PNG"
+		if ext != "" && (ext == ".jpg" || ext == ".jpeg") {
+			imgType = "JPEG"
+		}
 		size := c.Size()
 		x, y := c.Position().Add(off).Components()
 		w, h := size.Components()
@@ -143,10 +156,17 @@ func renderObjectsToPDF(doc *fpdf.Fpdf, o fyne.CanvasObject, off fyne.Position) 
 
 		imgID++
 		name := strconv.Itoa(imgID) + ".png" // a unique name in case any filename collides
+		if imgType == "JPEG" {
+			name = name[:len(name)-3] + "jpeg"
+		}
 		var r io.Reader
 		b := &bytes.Buffer{}
 		if c.Image != nil {
-			err = png.Encode(b, c.Image)
+			if imgType == "JPEG" {
+				err = jpeg.Encode(b, c.Image, nil)
+			} else {
+				err = png.Encode(b, c.Image)
+			}
 			r = bytes.NewReader(b.Bytes())
 		} else if c.File != "" {
 			r, err = os.Open(c.File)
@@ -156,7 +176,7 @@ func renderObjectsToPDF(doc *fpdf.Fpdf, o fyne.CanvasObject, off fyne.Position) 
 		}
 
 		// TODO image fill mode
-		opts := fpdf.ImageOptions{ImageType: "PNG"}
+		opts := fpdf.ImageOptions{ImageType: imgType}
 		doc.RegisterImageOptionsReader(name, opts, r)
 		doc.ImageOptions(name, float64(x), float64(y), float64(w), float64(h), false, opts, 0, "")
 	default:
