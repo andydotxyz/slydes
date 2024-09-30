@@ -3,7 +3,7 @@ module slydes
 go 1.17
 
 require (
-	fyne.io/fyne/v2 v2.5.1-0.20240814171005-80c96ac8c0d2
+	fyne.io/fyne/v2 v2.5.1
 	github.com/BurntSushi/toml v1.4.0
 	github.com/go-pdf/fpdf v0.8.0
 	github.com/yuin/goldmark v1.7.1
@@ -27,7 +27,7 @@ require (
 	github.com/jsummers/gobmp v0.0.0-20151104160322-e2ba15ffa76e // indirect
 	github.com/nicksnyder/go-i18n/v2 v2.4.0 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
-	github.com/rymdport/portal v0.2.2 // indirect
+	github.com/rymdport/portal v0.2.6 // indirect
 	github.com/srwiley/oksvg v0.0.0-20221011165216-be6e8873101c // indirect
 	github.com/srwiley/rasterx v0.0.0-20220730225603-2ab79fcdd4ef // indirect
 	github.com/stretchr/testify v1.8.4 // indirect
