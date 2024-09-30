@@ -2,6 +2,7 @@ package main
 
 import (
 	"image/color"
+	"strings"
 	"time"
 
 	"fyne.io/fyne/v2"
@@ -37,11 +38,20 @@ func (g *gui) makeUI() fyne.CanvasObject {
 	cellSize := fyne.NewSize(0, 0)
 	refreshPreviews := func() {
 		count, _ := g.s.count.Get()
-		items := make([]fyne.CanvasObject, count)
+		items := make([]fyne.CanvasObject, count+1)
 		for i := 0; i < count; i++ {
 			slide := g.newSlideButton(i)
 			items[i] = container.NewPadded(slide)
 		}
+		items[count] = widget.NewButtonWithIcon("", theme.ContentAddIcon(), func() {
+			rows := len(strings.Split(g.content.Text, "\n")) - 1
+
+			g.content.CursorRow = rows + 2
+			g.content.Append(`
+---
+# New Slide
+`)
+		})
 		grid.Objects = items
 		cellSize = grid.Objects[0].MinSize()
 		height := cellSize.Height - 4
@@ -86,7 +96,7 @@ func (g *gui) makeUI() fyne.CanvasObject {
 		g.refresh = true
 	}
 	g.content.OnCursorChanged = g.slideForCursor
-	g.content.SetText("# Slide 1")
+	g.content.SetText("# Slide 1\n")
 
 	split := container.NewHSplit(g.content, newAspectContainer(g.render))
 	split.Offset = 0.35
