@@ -24,12 +24,26 @@ func layoutContent(objs []fyne.CanvasObject, scale float32, size fyne.Size, pos 
 	if splitAt == 0 {
 		x = x + width + pad
 	}
+
+	leftEdge := x
+	inline := false
 	for i, o := range objs {
 		switch t := o.(type) {
 		case *canvas.Text:
 			t.TextSize = theme.TextSize() * scale
+
+			if len(t.Text) > 0 && t.Text[len(t.Text)-1] != '\000' {
+				inline = true
+			}
 		case slideWidget:
 			t.setScale(scale)
+		case *fyne.Container:
+			if len(t.Objects) == 2 {
+				if t, ok := t.Objects[1].(*canvas.Text); ok {
+					t.TextSize = theme.TextSize() * scale
+					inline = true
+				}
+			}
 		}
 
 		if splitAt == i {
@@ -41,8 +55,16 @@ func layoutContent(objs []fyne.CanvasObject, scale float32, size fyne.Size, pos 
 			}
 		} else {
 			o.Move(fyne.NewPos(x, y))
-			o.Resize(fyne.NewSize(width, o.MinSize().Height))
-			y += o.MinSize().Height + pad
+			if inline {
+				o.Resize(o.MinSize())
+				x += o.MinSize().Width
+
+				inline = false
+			} else {
+				o.Resize(fyne.NewSize(width, o.MinSize().Height))
+				x = leftEdge
+				y += o.MinSize().Height + pad
+			}
 		}
 	}
 }

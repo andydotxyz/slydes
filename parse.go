@@ -13,6 +13,7 @@ import (
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/canvas"
+	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/storage"
 )
 
@@ -39,8 +40,8 @@ func (s *slides) parseMarkdown(data string) content {
 }
 
 type parser struct {
-	blockquote, heading, list bool
-	parent                    *slides
+	blockquote, heading, list, code bool
+	parent                          *slides
 
 	c *content
 }
@@ -64,10 +65,12 @@ func (p *parser) Render(_ io.Writer, source []byte, n ast.Node) error {
 			case "Paragraph":
 				// if p.blockquote // TODO
 				if !p.list && tmpText != "" {
-					p.c.content = append(p.c.content, canvas.NewText(tmpText, color.Black))
+					p.c.content = append(p.c.content, canvas.NewText(tmpText+"\000", color.Black))
 				}
 			case "ListItem":
 				p.c.content = append(p.c.content, newBullet(tmpText, p.parent.theme))
+			case "CodeSpan":
+				p.code = false
 			}
 			return ast.WalkContinue, p.handleExitNode(n)
 		}
@@ -84,9 +87,11 @@ func (p *parser) Render(_ io.Writer, source []byte, n ast.Node) error {
 		case "Paragraph":
 			tmpText = ""
 		case "Text":
-			ret := addTextToSegment(string(n.Text(source)), &tmpText, n)
-			if ret != 0 {
-				return ret, nil
+			if !p.code {
+				ret := addTextToSegment(string(n.Text(source)), &tmpText, n)
+				if ret != 0 {
+					return ret, nil
+				}
 			}
 		case "Blockquote":
 			p.blockquote = true
@@ -100,6 +105,16 @@ func (p *parser) Render(_ io.Writer, source []byte, n ast.Node) error {
 				img.FillMode = canvas.ImageFillContain
 				p.c.content = append(p.c.content, img)
 			}
+		case "CodeSpan":
+			if !p.list && tmpText != "" {
+				p.c.content = append(p.c.content, canvas.NewText(tmpText, color.Black))
+			}
+
+			p.code = true
+			inline := canvas.NewText(string(n.Text(source)), color.Black)
+			bg := canvas.NewRectangle(color.Gray{Y: 0xcc})
+			p.c.content = append(p.c.content, container.NewStack(bg, inline))
+			tmpText = ""
 		}
 
 		return ast.WalkContinue, nil
