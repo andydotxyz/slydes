@@ -10,6 +10,7 @@ func (g *gui) showPresentWindow() {
 	items := g.s.items
 	id, _ := g.s.current.Get()
 	content := newSlide(items[id], g.s)
+	w2.SetPadded(false)
 	w2.SetContent(newAspectContainer(content))
 
 	addPresentationKeys(w2, content, items, id)
