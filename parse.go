@@ -7,6 +7,10 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/alecthomas/chroma/v2/lexers"
+	"github.com/watzon/goshot/pkg/chrome"
+	"github.com/watzon/goshot/pkg/content/code"
+	"github.com/watzon/goshot/pkg/render"
 	"github.com/yuin/goldmark"
 	"github.com/yuin/goldmark/ast"
 	"github.com/yuin/goldmark/renderer"
@@ -115,6 +119,43 @@ func (p *parser) Render(_ io.Writer, source []byte, n ast.Node) error {
 			bg := canvas.NewRectangle(color.Gray{Y: 0xcc})
 			p.c.content = append(p.c.content, container.NewStack(bg, inline))
 			tmpText = ""
+		case "FencedCodeBlock", "CodeBlock":
+			language := ""
+			if c, ok := n.(*ast.FencedCodeBlock); ok {
+				language = string(c.Language(source))
+
+				if language != "" {
+					lex := lexers.Get(language)
+					if lex == nil {
+						log.Println("Failed to find lexer for language", language)
+						language = ""
+					}
+				}
+			}
+
+			lines := n.Lines()
+			raw := string(source[lines.At(0).Start:lines.At(lines.Len()-1).Stop])
+
+			codeContent := code.DefaultRenderer(raw).
+				WithTheme("catppuccin-mocha"). // or "-latte" for light
+				WithLanguage(language).
+				WithLineNumbers(true).
+				WithFontSize(42).
+				WithMinWidth(600).
+				WithMaxWidth(1900)
+
+			draw := render.NewCanvas().
+				WithChrome(chrome.NewBlankChrome()).
+				WithContent(codeContent)
+
+			img, err := draw.RenderToImage()
+			if err != nil {
+				fyne.LogError("Failed to render code", err)
+			} else {
+				rendered := canvas.NewImageFromImage(img)
+				rendered.FillMode = canvas.ImageFillContain
+				p.c.content = append(p.c.content, rendered)
+			}
 		}
 
 		return ast.WalkContinue, nil

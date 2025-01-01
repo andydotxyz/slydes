@@ -36,3 +36,19 @@ Content for slide
 * Third
 
 ```
+
+## Code styling
+
+You can include styled text using fenced or indented code blocks.
+When using the fenced (\`\`\`) block you can specify the language too, as follows:
+
+    ```go
+    func hello() {
+        log.Println("hello")
+    }
+    ```
+
+![](img/screenshot-code.png)
+
+Thanks to the excellent [goshot](https://github.com/watzon/goshot) project for
+providing the code rendering support!
