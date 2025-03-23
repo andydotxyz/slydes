@@ -134,7 +134,10 @@ func (p *parser) Render(_ io.Writer, source []byte, n ast.Node) error {
 			}
 
 			lines := n.Lines()
-			raw := string(source[lines.At(0).Start:lines.At(lines.Len()-1).Stop])
+			raw := ""
+			if lines.Len() > 0 {
+				raw = string(source[lines.At(0).Start:lines.At(lines.Len()-1).Stop])
+			}
 
 			codeContent := code.DefaultRenderer(raw).
 				WithTheme("catppuccin-mocha"). // or "-latte" for light
