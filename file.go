@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"io/ioutil"
+	"io"
 	"path/filepath"
 	"strings"
 
@@ -35,16 +35,22 @@ func (g *gui) exportFile() {
 		d := dialog.NewCustomWithoutButtons("Printing", a, g.win)
 		a.Start()
 		d.Show()
-		err = export(g.s, w)
-		_ = w.Close()
-		d.Hide()
-		a.Stop()
 
-		if err != nil {
-			dialog.ShowError(err, g.win)
-		} else {
-			dialog.ShowInformation("Print to PDF", fmt.Sprintf("Printing to %s completed", w.URI().Name()), g.win)
-		}
+		go func() {
+			err = export(g.s, w)
+			_ = w.Close()
+
+			fyne.Do(func() {
+				d.Hide()
+				a.Stop()
+
+				if err != nil {
+					dialog.ShowError(err, g.win)
+				} else {
+					dialog.ShowInformation("Print to PDF", fmt.Sprintf("Printing to %s completed", w.URI().Name()), g.win)
+				}
+			})
+		}()
 	}, g.win)
 
 	name := "Untitled.md"
@@ -76,7 +82,7 @@ func (g *gui) openFile() {
 			return
 		}
 
-		data, err := ioutil.ReadAll(r)
+		data, err := io.ReadAll(r)
 		_ = r.Close()
 
 		if err != nil {

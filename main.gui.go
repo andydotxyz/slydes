@@ -55,8 +55,11 @@ func (g *gui) makeUI() fyne.CanvasObject {
 		grid.Objects = items
 		cellSize = grid.Objects[0].MinSize()
 		height := cellSize.Height - 4
-		border.Resize(fyne.NewSize(height*16.0/9.0-3, height))
-		grid.Refresh()
+
+		fyne.Do(func() {
+			border.Resize(fyne.NewSize(height*16.0/9.0-3, height))
+			grid.Refresh()
+		})
 	}
 
 	var previewScroll *container.Scroll
@@ -87,8 +90,10 @@ func (g *gui) makeUI() fyne.CanvasObject {
 	}
 	moveHighlight(false)
 	g.s.current.AddListener(binding.NewDataListener(func() {
-		moveHighlight(true)
-		g.refreshSlide()
+		fyne.Do(func() {
+			moveHighlight(true)
+			g.refreshSlide()
+		})
 	}))
 
 	g.render = newSlide("", g.s)
@@ -104,7 +109,7 @@ func (g *gui) makeUI() fyne.CanvasObject {
 
 	go func() {
 		for {
-			time.Sleep(time.Second / 10)
+			time.Sleep(time.Second / 3)
 			if !g.refresh {
 				continue
 			}
@@ -113,8 +118,11 @@ func (g *gui) makeUI() fyne.CanvasObject {
 			g.s.parseSource(g.content.Text)
 			go refreshPreviews()
 			g.slideForCursor()
-			moveHighlight(true)
-			g.refreshSlide()
+
+			fyne.Do(func() {
+				moveHighlight(true)
+				g.refreshSlide()
+			})
 		}
 	}()
 
@@ -178,10 +186,14 @@ func (g *gui) slideForCursor() {
 		}
 		id++
 	}
-	g.s.current.Set(id)
+	_ = g.s.current.Set(id)
 }
 
 func (g *gui) refreshSlide() {
+	if g.render == nil {
+		return
+	}
+
 	g.render.setSource(g.s.currentSource())
 }
 
