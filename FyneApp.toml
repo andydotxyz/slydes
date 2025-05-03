@@ -1,5 +1,7 @@
+Description = "A slideshow app using Fyne and markdown"
+
 [Details]
   Icon = "Icon.png"
   Name = "Slydes"
   ID = "xyz.andy.slydes"
-
+  Build = 6
