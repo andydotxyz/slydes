@@ -5,3 +5,6 @@ Description = "A slideshow app using Fyne and markdown"
   Name = "Slydes"
   ID = "xyz.andy.slydes"
   Build = 6
+
+[Migrations]
+  fyneDo = true
