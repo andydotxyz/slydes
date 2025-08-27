@@ -40,8 +40,10 @@ func (g *gui) makeUI() fyne.CanvasObject {
 		count, _ := g.s.count.Get()
 		items := make([]fyne.CanvasObject, count+1)
 		for i := 0; i < count; i++ {
-			slide := g.newSlideButton(i)
-			items[i] = container.NewPadded(slide)
+			fyne.DoAndWait(func() {
+				slide := g.newSlideButton(i)
+				items[i] = container.NewPadded(slide)
+			})
 		}
 		items[count] = widget.NewButtonWithIcon("", theme.ContentAddIcon(), func() {
 			rows := len(strings.Split(g.content.Text, "\n")) - 1

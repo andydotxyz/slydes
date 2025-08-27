@@ -31,12 +31,16 @@ func export(s *slides, w io.Writer) error {
 	for _, item := range s.items {
 		doc.AddPage()
 
-		s := newSlide(item, s)
-		s.Resize(fyne.NewSize(float32(pageWidth), float32(pageHeight)))
-		err := renderObjectsToPDF(doc, s.content, fyne.Position{Y: float32(totalHeight-pageHeight) / 2})
-		if err != nil {
-			fyne.LogError("Failed to encode the PDF", err)
-		}
+		var sl *slide
+		fyne.DoAndWait(func() {
+			sl = newSlide(item, s)
+			sl.Resize(fyne.NewSize(float32(pageWidth), float32(pageHeight)))
+
+			err := renderObjectsToPDF(doc, sl.content, fyne.Position{Y: float32(totalHeight-pageHeight) / 2})
+			if err != nil {
+				fyne.LogError("Failed to encode the PDF", err)
+			}
+		})
 	}
 	return doc.Output(w)
 }
