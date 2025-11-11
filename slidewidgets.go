@@ -1,6 +1,8 @@
 package main
 
 import (
+	"image/color"
+
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/container"
@@ -30,13 +32,21 @@ func newBullet(txt string, th fyne.Theme) *bullet {
 
 func (b *bullet) CreateRenderer() fyne.WidgetRenderer {
 	b.dot = canvas.NewCircle(b.theme.Color(colorNameBullet, theme.VariantLight))
+	if b.content == "" {
+		b.dot.FillColor = color.Transparent
+	}
+
 	b.text = canvas.NewText(b.content, b.theme.Color(colorNameBullet, theme.VariantLight))
 	return widget.NewSimpleRenderer(container.NewWithoutLayout(b.dot, b.text))
 }
 
 func (b *bullet) Refresh() {
 	if b.dot != nil {
-		b.dot.FillColor = b.theme.Color(colorNameBullet, theme.VariantLight)
+		if b.content == "" {
+			b.dot.FillColor = color.Transparent
+		} else {
+			b.dot.FillColor = b.theme.Color(colorNameBullet, theme.VariantLight)
+		}
 		b.dot.Refresh()
 	}
 	if b.text != nil {
