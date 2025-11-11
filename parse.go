@@ -69,7 +69,7 @@ func (p *parser) Render(_ io.Writer, source []byte, n ast.Node) error {
 			case "Paragraph":
 				// if p.blockquote // TODO
 				if !p.list && tmpText != "" {
-					p.c.content = append(p.c.content, canvas.NewText(tmpText+"\000", color.Black))
+					p.c.content = append(p.c.content, canvas.NewText(tmpText+"\r", color.Black))
 				}
 			case "ListItem":
 				p.c.content = append(p.c.content, newBullet(tmpText, p.parent.theme))

@@ -32,7 +32,7 @@ func layoutContent(objs []fyne.CanvasObject, scale float32, size fyne.Size, pos 
 		case *canvas.Text:
 			t.TextSize = theme.TextSize() * scale
 
-			if len(t.Text) > 0 && t.Text[len(t.Text)-1] != '\000' {
+			if len(t.Text) > 0 && t.Text[len(t.Text)-1] != '\r' {
 				inline = true
 			}
 		case slideWidget:
