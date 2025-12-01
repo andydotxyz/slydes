@@ -1,0 +1,180 @@
+{
+  "Apptrix": {
+    "Version": "1"
+  },
+  "Metadata": {
+    "height": 312,
+    "width": 440
+  },
+  "Screens": [
+    {
+      "Object": {
+        "Type": "*fyne.Container",
+        "Layout": "Border",
+        "Objects": [
+          {
+            "Type": "*fyne.Container",
+            "Layout": "VBox",
+            "Objects": [
+              {
+                "Type": "*widget.Toolbar",
+                "Struct": {
+                  "Items": [
+                    {
+                      "Icon": "FileIcon",
+                      "Type": "Action"
+                    },
+                    {
+                      "Icon": "FolderOpenIcon",
+                      "Type": "Action"
+                    },
+                    {
+                      "Icon": "DocumentSaveIcon",
+                      "Type": "Action"
+                    },
+                    {
+                      "Icon": "DocumentPrintIcon",
+                      "Type": "Action"
+                    },
+                    {
+                      "Type": "Separator"
+                    },
+                    {
+                      "Icon": "NavigateBackIcon",
+                      "Type": "Action"
+                    },
+                    {
+                      "Icon": "NavigateNextIcon",
+                      "Type": "Action"
+                    },
+                    {
+                      "Icon": "MediaPlayIcon",
+                      "Type": "Action"
+                    },
+                    {
+                      "Type": "Spacer"
+                    },
+                    {
+                      "Icon": "QuestionIcon",
+                      "Type": "Action"
+                    }
+                  ]
+                }
+              },
+              {
+                "Type": "*container.Scroll",
+                "Struct": {
+                  "Content": {
+                    "Type": "*fyne.Container",
+                    "Layout": "Stack",
+                    "Objects": [
+                      {
+                        "Type": "*widget.Label",
+                        "Struct": {
+                          "Hidden": false,
+                          "Text": "(preview))",
+                          "Alignment": 0,
+                          "Wrapping": 0,
+                          "TextStyle": {
+                            "Bold": false,
+                            "Italic": false,
+                            "Monospace": false,
+                            "Symbol": false,
+                            "TabWidth": 0,
+                            "Underline": false
+                          },
+                          "Truncation": 0,
+                          "Importance": 0,
+                          "SizeName": "",
+                          "Selectable": false
+                        }
+                      }
+                    ],
+                    "Properties": {
+                      "layout": "Stack"
+                    }
+                  },
+                  "Direction": 0
+                }
+              }
+            ],
+            "Properties": {
+              "dir": "vertical",
+              "layout": "VBox"
+            }
+          },
+          {
+            "Type": "*container.Split",
+            "Struct": {
+              "Horizontal": true,
+              "Leading": {
+                "Type": "*fyne.Container",
+                "Layout": "Stack",
+                "Objects": [
+                  {
+                    "Type": "*widget.Entry",
+                    "Struct": {
+                      "Hidden": false,
+                      "Text": "",
+                      "TextStyle": {
+                        "Bold": false,
+                        "Italic": false,
+                        "Monospace": false,
+                        "Symbol": false,
+                        "TabWidth": 0,
+                        "Underline": false
+                      },
+                      "PlaceHolder": "# Slide 1",
+                      "Password": false,
+                      "MultiLine": true,
+                      "Wrapping": 3,
+                      "Scroll": 0,
+                      "AlwaysShowValidationError": false,
+                      "CursorRow": 0,
+                      "CursorColumn": 0
+                    }
+                  }
+                ],
+                "Properties": {
+                  "layout": "Stack"
+                }
+              },
+              "Offset": 0.25,
+              "Trailing": {
+                "Type": "*fyne.Container",
+                "Layout": "Stack",
+                "Objects": [
+                  {
+                    "Type": "*canvas.Image",
+                    "Struct": {
+                      "Hidden": false,
+                      "File": "/home/andy/Code/Andy/slydes/img/slide.png",
+                      "Resource": null,
+                      "Image": null,
+                      "Translucency": 0,
+                      "FillMode": 1,
+                      "ScaleMode": 0,
+                      "CornerRadius": 0
+                    }
+                  }
+                ],
+                "Properties": {
+                  "layout": "Stack"
+                }
+              }
+            }
+          }
+        ],
+        "Properties": {
+          "bottom": "",
+          "dir": "vertical",
+          "layout": "Border",
+          "left": "",
+          "right": "",
+          "top": "0"
+        }
+      },
+      "Name": ""
+    }
+  ]
+}
