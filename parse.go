@@ -143,6 +143,7 @@ func (p *parser) Render(_ io.Writer, source []byte, n ast.Node) error {
 				WithTheme("catppuccin-mocha"). // or "-latte" for light
 				WithLanguage(language).
 				WithLineNumbers(true).
+				WithTabWidth(4).
 				WithFontSize(42).
 				WithMinWidth(600).
 				WithMaxWidth(1900)
