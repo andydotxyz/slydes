@@ -1,0 +1,209 @@
+{
+  "Apptrix": {
+    "Version": "1"
+  },
+  "Metadata": {
+    "height": 495,
+    "width": 691
+  },
+  "Screens": [
+    {
+      "Object": {
+        "Type": "*fyne.Container",
+        "Layout": "Stack",
+        "Objects": [
+          {
+            "Type": "*container.Split",
+            "Struct": {
+              "Horizontal": true,
+              "Leading": {
+                "Type": "*fyne.Container",
+                "Layout": "Stack",
+                "Objects": [
+                  {
+                    "Type": "*canvas.Image",
+                    "Struct": {
+                      "Hidden": false,
+                      "File": "/Users/andy/Code/Andy/slydes/img/slide.png",
+                      "Resource": null,
+                      "Image": null,
+                      "Translucency": 0,
+                      "FillMode": 1,
+                      "ScaleMode": 0,
+                      "CornerRadius": 0
+                    }
+                  },
+                  {
+                    "Type": "*widget.Label",
+                    "Struct": {
+                      "Hidden": false,
+                      "Text": "Current Slide",
+                      "Alignment": 0,
+                      "Wrapping": 0,
+                      "TextStyle": {
+                        "Bold": true,
+                        "Italic": false,
+                        "Monospace": false,
+                        "Symbol": false,
+                        "TabWidth": 0,
+                        "Underline": false
+                      },
+                      "Truncation": 0,
+                      "Importance": 0,
+                      "SizeName": "",
+                      "Selectable": false
+                    }
+                  }
+                ]
+              },
+              "Offset": 0.67,
+              "Trailing": {
+                "Type": "*fyne.Container",
+                "Layout": "Stack",
+                "Objects": [
+                  {
+                    "Type": "*container.Split",
+                    "Struct": {
+                      "Horizontal": false,
+                      "Leading": {
+                        "Type": "*fyne.Container",
+                        "Layout": "Border",
+                        "Objects": [
+                          {
+                            "Type": "*widget.Label",
+                            "Struct": {
+                              "Hidden": false,
+                              "Text": "Presenter Notes",
+                              "Alignment": 0,
+                              "Wrapping": 0,
+                              "TextStyle": {
+                                "Bold": false,
+                                "Italic": false,
+                                "Monospace": true,
+                                "Symbol": false,
+                                "TabWidth": 0,
+                                "Underline": false
+                              },
+                              "Truncation": 0,
+                              "Importance": 0,
+                              "SizeName": "",
+                              "Selectable": false
+                            }
+                          },
+                          {
+                            "Type": "*widget.Label",
+                            "Name": "timer",
+                            "Struct": {
+                              "Hidden": false,
+                              "Text": "0:00:00",
+                              "Alignment": 1,
+                              "Wrapping": 0,
+                              "TextStyle": {
+                                "Bold": true,
+                                "Italic": false,
+                                "Monospace": true,
+                                "Symbol": false,
+                                "TabWidth": 0,
+                                "Underline": false
+                              },
+                              "Truncation": 0,
+                              "Importance": 0,
+                              "SizeName": "",
+                              "Selectable": false
+                            }
+                          }
+                        ],
+                        "Properties": {
+                          "bottom": "",
+                          "layout": "Border",
+                          "left": "",
+                          "right": "",
+                          "top": "1"
+                        }
+                      },
+                      "Offset": 0.5,
+                      "Trailing": {
+                        "Type": "*fyne.Container",
+                        "Layout": "Border",
+                        "Objects": [
+                          {
+                            "Type": "*canvas.Image",
+                            "Struct": {
+                              "Hidden": false,
+                              "File": "/Users/andy/Code/Andy/slydes/img/slide.png",
+                              "Resource": null,
+                              "Image": null,
+                              "Translucency": 0,
+                              "FillMode": 1,
+                              "ScaleMode": 0,
+                              "CornerRadius": 0
+                            }
+                          },
+                          {
+                            "Type": "*widget.Toolbar",
+                            "Struct": {
+                              "Items": [
+                                {
+                                  "Icon": "NavigateBackIcon",
+                                  "Type": "Action"
+                                },
+                                {
+                                  "Icon": "NavigateNextIcon",
+                                  "Type": "Action"
+                                },
+                                {
+                                  "Type": "Spacer"
+                                },
+                                {
+                                  "Icon": "LogoutIcon",
+                                  "Type": "Action"
+                                }
+                              ]
+                            }
+                          },
+                          {
+                            "Type": "*widget.Label",
+                            "Struct": {
+                              "Hidden": false,
+                              "Text": "Next Slide",
+                              "Alignment": 0,
+                              "Wrapping": 0,
+                              "TextStyle": {
+                                "Bold": true,
+                                "Italic": false,
+                                "Monospace": false,
+                                "Symbol": false,
+                                "TabWidth": 0,
+                                "Underline": false
+                              },
+                              "Truncation": 0,
+                              "Importance": 0,
+                              "SizeName": "",
+                              "Selectable": false
+                            }
+                          }
+                        ],
+                        "Properties": {
+                          "bottom": "1",
+                          "layout": "Border",
+                          "left": "",
+                          "right": "",
+                          "top": "2"
+                        }
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        ],
+        "Properties": {
+          "dir": "vertical",
+          "layout": "Stack"
+        }
+      },
+      "Name": ""
+    }
+  ]
+}
