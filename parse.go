@@ -62,9 +62,17 @@ func (p *parser) Render(_ io.Writer, source []byte, n ast.Node) error {
 				case 1:
 					p.c.heading = tmpText
 				case 2:
-					p.c.subheading = tmpText
+					if p.c.subheading == "" {
+						p.c.subheading = tmpText
+					} else {
+						t := canvas.NewText(tmpText+"\r", color.Black)
+						t.TextStyle.Bold = true
+						p.c.content = append(p.c.content, t)
+					}
 				default:
-					log.Println("unsupported heading level", n.(*ast.Heading).Level)
+					t := canvas.NewText(tmpText+"\r", color.Black)
+					t.TextStyle.Bold = true
+					p.c.content = append(p.c.content, t)
 				}
 			case "Paragraph":
 				// if p.blockquote // TODO
