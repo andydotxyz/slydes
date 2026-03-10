@@ -2,6 +2,7 @@ package main
 
 import (
 	"fyne.io/fyne/v2"
+	"fyne.io/fyne/v2/driver/desktop"
 )
 
 func (g *gui) showPresentWindow() {
@@ -14,7 +15,12 @@ func (g *gui) showPresentWindow() {
 	w2.SetContent(newAspectContainer(content))
 
 	addPresentationKeys(w2, content, items, id)
-	w2.SetFullScreen(true)
+	if desk, ok := w2.(desktop.Window); ok {
+		// TODO also show presenter view
+		desk.RequestFullScreenSecondary()
+	} else {
+		w2.SetFullScreen(true)
+	}
 	w2.Show()
 }
 
