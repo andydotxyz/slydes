@@ -20,14 +20,15 @@ type bullet struct {
 	theme fyne.Theme
 
 	content string
+	indent  int
 	scale   float32
 
 	dot  *canvas.Circle
 	text *canvas.Text
 }
 
-func newBullet(txt string, th fyne.Theme) *bullet {
-	return &bullet{theme: th, content: txt, scale: 1}
+func newBullet(txt string, indent int, th fyne.Theme) *bullet {
+	return &bullet{theme: th, content: txt, indent: indent, scale: 1}
 }
 
 func (b *bullet) CreateRenderer() fyne.WidgetRenderer {
@@ -55,10 +56,15 @@ func (b *bullet) Refresh() {
 	}
 }
 
+func (b *bullet) indentOffset() float32 {
+	return float32(b.indent) * theme.Padding() * 4 * b.scale
+}
+
 func (b *bullet) Resize(size fyne.Size) {
-	b.dot.Move(fyne.NewPos(0, (size.Height-b.dot.Size().Height)/2))
-	b.text.Move(fyne.NewPos(b.dot.Size().Width+theme.Padding()*b.scale, 0))
-	b.text.Resize(fyne.NewSize(size.Width-b.dot.Size().Width-theme.Padding()*b.scale, size.Height))
+	off := b.indentOffset()
+	b.dot.Move(fyne.NewPos(off, (size.Height-b.dot.Size().Height)/2))
+	b.text.Move(fyne.NewPos(off+b.dot.Size().Width+theme.Padding()*b.scale, 0))
+	b.text.Resize(fyne.NewSize(size.Width-off-b.dot.Size().Width-theme.Padding()*b.scale, size.Height))
 }
 
 func (b *bullet) MinSize() fyne.Size {
@@ -66,7 +72,7 @@ func (b *bullet) MinSize() fyne.Size {
 		return fyne.NewSize(14, 4)
 	}
 
-	return b.dot.Size().Add(b.text.MinSize()).AddWidthHeight(theme.Padding()*b.scale, 0)
+	return b.dot.Size().Add(b.text.MinSize()).AddWidthHeight(theme.Padding()*b.scale+b.indentOffset(), 0)
 }
 
 func (b *bullet) setScale(scale float32) {

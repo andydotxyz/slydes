@@ -45,6 +45,7 @@ func (s *slides) parseMarkdown(data string) content {
 
 type parser struct {
 	blockquote, heading, list, code bool
+	listDepth                       int
 	parent                          *slides
 
 	c *content
@@ -80,7 +81,10 @@ func (p *parser) Render(_ io.Writer, source []byte, n ast.Node) error {
 					p.c.content = append(p.c.content, canvas.NewText(tmpText+"\r", color.Black))
 				}
 			case "ListItem":
-				p.c.content = append(p.c.content, newBullet(tmpText, p.parent.theme))
+				if tmpText != "" {
+					p.c.content = append(p.c.content, newBullet(tmpText, p.listDepth-1, p.parent.theme))
+					tmpText = ""
+				}
 			case "CodeSpan":
 				p.code = false
 			}
@@ -89,7 +93,12 @@ func (p *parser) Render(_ io.Writer, source []byte, n ast.Node) error {
 
 		switch n.Kind().String() {
 		case "List":
+			if p.list && tmpText != "" {
+				p.c.content = append(p.c.content, newBullet(tmpText, p.listDepth-1, p.parent.theme))
+				tmpText = ""
+			}
 			p.list = true
+			p.listDepth++
 		case "ListItem":
 			tmpText = ""
 		case "Heading":
@@ -180,7 +189,10 @@ func (p *parser) handleExitNode(n ast.Node) error {
 	case "Blockquote":
 		p.blockquote = false
 	case "List":
-		p.list = false
+		p.listDepth--
+		if p.listDepth == 0 {
+			p.list = false
+		}
 	}
 	return nil
 }
