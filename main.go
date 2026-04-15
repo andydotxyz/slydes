@@ -2,7 +2,7 @@ package main
 
 import (
 	"flag"
-	"io/ioutil"
+	"io"
 	"os"
 	"path/filepath"
 
@@ -27,7 +27,7 @@ func main() {
 		path := flag.Args()[0]
 
 		f, _ := os.Open(path)
-		data, err := ioutil.ReadAll(f)
+		data, err := io.ReadAll(f)
 		_ = f.Close()
 
 		if err != nil {

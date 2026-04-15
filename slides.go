@@ -24,9 +24,11 @@ type slides struct {
 }
 
 func newSlides() *slides {
-	s := &slides{count: binding.NewInt(), current: binding.NewInt(),
+	s := &slides{
+		count: binding.NewInt(), current: binding.NewInt(),
 		divideRows: make([]int, 0), items: []string{""},
-		theme: &slideTheme{Theme: theme.DefaultTheme()}}
+		theme: &slideTheme{Theme: theme.DefaultTheme()},
+	}
 	_ = s.count.Set(1)
 	return s
 }
