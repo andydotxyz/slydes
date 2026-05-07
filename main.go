@@ -19,6 +19,7 @@ func main() {
 
 	s := newSlides()
 	g := newGUI(s, w)
+	w.SetMaster()
 	w.SetContent(g.makeUI())
 	w.Canvas().Focus(g.content)
 
@@ -40,4 +41,62 @@ func main() {
 	}
 
 	w.ShowAndRun()
+}
+
+func nextSlide() {
+	if currentPresenting == nil {
+		return
+	}
+
+	p := currentPresenting
+	if p.id >= len(p.items)-1 {
+		return
+	}
+
+	p.id++
+	p.slide.setSource(p.items[p.id])
+
+	if p.preview != nil {
+		p.preview.setSource(p.items[p.id])
+		if p.id < len(p.items)-1 {
+			p.next.setSource(p.items[p.id+1])
+		} else {
+			p.next.setSource("")
+		}
+	}
+}
+
+func prevSlide() {
+	if currentPresenting == nil {
+		return
+	}
+
+	p := currentPresenting
+	if p.id <= 0 {
+		return
+	}
+
+	p.id--
+	p.slide.setSource(p.items[p.id])
+
+	if p.preview != nil {
+		p.preview.setSource(p.items[p.id])
+		if p.id < len(p.items)-1 {
+			p.next.setSource(p.items[p.id+1])
+		} else {
+			p.next.setSource("")
+		}
+	}
+}
+
+func exitPresent() {
+	if currentPresenting == nil {
+		return
+	}
+
+	currentPresenting.live.Close()
+	if currentPresenting.control != nil {
+		currentPresenting.control.Close()
+	}
+	currentPresenting = nil
 }

@@ -14,7 +14,10 @@ import (
 type presenterGui struct {
 	win fyne.Window
 
-	timer *widget.Label
+	controls       *widget.Toolbar
+	timer          *widget.Label
+	currentPreview *fyne.Container
+	nextPreview    *fyne.Container
 }
 
 func newPresenterGUI() *presenterGui {
@@ -22,37 +25,42 @@ func newPresenterGUI() *presenterGui {
 }
 
 func (g *presenterGui) makeUI() fyne.CanvasObject {
-	g.timer = &widget.Label{Text: "0:00:00", TextStyle: fyne.TextStyle{Bold: true, Italic: false, Monospace: true, Symbol: false, TabWidth: 0, Underline: false}, Alignment: 1, Wrapping: 0}
+	g.controls = widget.NewToolbar(
+		widget.NewToolbarAction(theme.NavigateBackIcon(), func() {}),
+		widget.NewToolbarAction(theme.NavigateNextIcon(), func() {}),
+		widget.NewToolbarSpacer(),
+		widget.NewToolbarAction(theme.LogoutIcon(), func() {}),
+	)
+	g.timer = &widget.Label{Text: "0:00:00", TextStyle: fyne.TextStyle{Bold: true, Italic: false, Monospace: true, Symbol: false, TabWidth: 0, Underline: false, Strikethrough: false}, Alignment: 1, Wrapping: 0}
+	g.currentPreview = container.NewStack(
+		&canvas.Image{File: "/Users/andy/Code/Andy/slydes/img/slide.png", FillMode: canvas.ImageFillContain, CornerRadius: 0.000000})
+	g.nextPreview = container.NewStack(
+		&canvas.Image{File: "/Users/andy/Code/Andy/slydes/img/slide.png", FillMode: canvas.ImageFillContain, CornerRadius: 0.000000})
 
 	return container.NewStack(
-		&container.Split{Horizontal: true, Offset: 0.670000, Leading: container.NewVBox(
-			&canvas.Image{File: "/Users/andy/Code/Andy/slydes/img/slide.png", FillMode: canvas.ImageFillContain, CornerRadius: 0.000000},
-			widget.NewLabelWithStyle("Current Slide", 0, fyne.TextStyle{Bold: true, Italic: false, Monospace: false, Symbol: false, TabWidth: 0, Underline: false})), Trailing: container.NewVBox(
-			&container.Split{Horizontal: false, Offset: 0.500000, Leading: container.NewBorder(
+		&container.Split{Horizontal: true, Offset: 0.670000, Leading: container.NewStack(
+			widget.NewLabelWithStyle("Current Slide", 0, fyne.TextStyle{Bold: true, Italic: false, Monospace: false, Symbol: false, TabWidth: 0, Underline: false, Strikethrough: false}),
+			g.currentPreview), Trailing: container.NewStack(
+			&container.Split{Horizontal: false, Offset: 0.600000, Leading: container.NewBorder(
 
 				g.timer,
 				nil,
 				nil,
 				nil,
-				widget.NewLabelWithStyle("Presenter Notes", 0, fyne.TextStyle{Bold: false, Italic: false, Monospace: true, Symbol: false, TabWidth: 0, Underline: false})), Trailing: container.NewBorder(
+				widget.NewLabelWithStyle("Presenter Notes", 0, fyne.TextStyle{Bold: false, Italic: false, Monospace: true, Symbol: false, TabWidth: 0, Underline: false, Strikethrough: false})), Trailing: container.NewBorder(
 
-				widget.NewLabelWithStyle("Next Slide", 0, fyne.TextStyle{Bold: true, Italic: false, Monospace: false, Symbol: false, TabWidth: 0, Underline: false}),
+				widget.NewLabelWithStyle("Next Slide", 0, fyne.TextStyle{Bold: true, Italic: false, Monospace: false, Symbol: false, TabWidth: 0, Underline: false, Strikethrough: false}),
 
-				widget.NewToolbar(
-					widget.NewToolbarAction(theme.NavigateBackIcon(), func() {}),
-					widget.NewToolbarAction(theme.NavigateNextIcon(), func() {}),
-					widget.NewToolbarSpacer(),
-					widget.NewToolbarAction(theme.LogoutIcon(), func() {}),
-				),
+				g.controls,
 				nil,
 				nil,
-				&canvas.Image{File: "/Users/andy/Code/Andy/slydes/img/slide.png", FillMode: canvas.ImageFillContain, CornerRadius: 0.000000})})})
+				g.nextPreview)})})
 }
 
 func (g *presenterGui) makeWindow(a fyne.App) fyne.Window {
 	w := a.NewWindow("presenter")
 	g.win = w
-	w.Resize(fyne.NewSize(691, 495))
+	w.Resize(fyne.NewSize(699, 495))
 	w.SetContent(g.makeUI())
 	return w
 }

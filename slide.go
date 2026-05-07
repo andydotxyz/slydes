@@ -1,6 +1,8 @@
 package main
 
 import (
+	"image/color"
+
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/container"
@@ -34,8 +36,13 @@ func newSlide(data string, parent *slides) *slide {
 	items := []fyne.CanvasObject{s.bg}
 	s.heading = nil
 	s.subheading = nil
-	s.addContent(&items, parent.parseMarkdown(data))
-	s.content = container.NewWithoutLayout(items...)
+	if data == "" {
+		s.bg = canvas.NewRectangle(color.Black)
+		s.content = container.NewWithoutLayout()
+	} else {
+		s.addContent(&items, parent.parseMarkdown(data))
+		s.content = container.NewWithoutLayout(items...)
+	}
 	return s
 }
 
@@ -93,6 +100,13 @@ func (s *slide) addContent(items *[]fyne.CanvasObject, in content) {
 }
 
 func (s *slide) setSource(data string) {
+	if data == "" {
+		s.bg = canvas.NewRectangle(color.Black)
+		s.content.Objects = []fyne.CanvasObject{}
+		s.Refresh()
+		return
+	}
+
 	s.bg = s.themeBackground()
 	items := []fyne.CanvasObject{s.bg}
 	s.heading = nil

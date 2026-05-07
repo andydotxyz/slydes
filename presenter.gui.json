@@ -4,7 +4,7 @@
   },
   "Metadata": {
     "height": 495,
-    "width": 691
+    "width": 699
   },
   "Screens": [
     {
@@ -21,19 +21,6 @@
                 "Layout": "Stack",
                 "Objects": [
                   {
-                    "Type": "*canvas.Image",
-                    "Struct": {
-                      "Hidden": false,
-                      "File": "/Users/andy/Code/Andy/slydes/img/slide.png",
-                      "Resource": null,
-                      "Image": null,
-                      "Translucency": 0,
-                      "FillMode": 1,
-                      "ScaleMode": 0,
-                      "CornerRadius": 0
-                    }
-                  },
-                  {
                     "Type": "*widget.Label",
                     "Struct": {
                       "Hidden": false,
@@ -46,15 +33,43 @@
                         "Monospace": false,
                         "Symbol": false,
                         "TabWidth": 0,
-                        "Underline": false
+                        "Underline": false,
+                        "Strikethrough": false
                       },
                       "Truncation": 0,
                       "Importance": 0,
                       "SizeName": "",
                       "Selectable": false
                     }
+                  },
+                  {
+                    "Type": "*fyne.Container",
+                    "Layout": "Stack",
+                    "Name": "currentPreview",
+                    "Objects": [
+                      {
+                        "Type": "*canvas.Image",
+                        "Struct": {
+                          "Hidden": false,
+                          "File": "/Users/andy/Code/Andy/slydes/img/slide.png",
+                          "Resource": null,
+                          "Image": null,
+                          "Translucency": 0,
+                          "FillMode": 1,
+                          "ScaleMode": 0,
+                          "CornerRadius": 0
+                        }
+                      }
+                    ],
+                    "Properties": {
+                      "layout": "Stack",
+                      "name": "currentPreview"
+                    }
                   }
-                ]
+                ],
+                "Properties": {
+                  "layout": "Stack"
+                }
               },
               "Offset": 0.67,
               "Trailing": {
@@ -82,7 +97,8 @@
                                 "Monospace": true,
                                 "Symbol": false,
                                 "TabWidth": 0,
-                                "Underline": false
+                                "Underline": false,
+                                "Strikethrough": false
                               },
                               "Truncation": 0,
                               "Importance": 0,
@@ -104,7 +120,8 @@
                                 "Monospace": true,
                                 "Symbol": false,
                                 "TabWidth": 0,
-                                "Underline": false
+                                "Underline": false,
+                                "Strikethrough": false
                               },
                               "Truncation": 0,
                               "Importance": 0,
@@ -121,26 +138,38 @@
                           "top": "1"
                         }
                       },
-                      "Offset": 0.5,
+                      "Offset": 0.6,
                       "Trailing": {
                         "Type": "*fyne.Container",
                         "Layout": "Border",
                         "Objects": [
                           {
-                            "Type": "*canvas.Image",
-                            "Struct": {
-                              "Hidden": false,
-                              "File": "/Users/andy/Code/Andy/slydes/img/slide.png",
-                              "Resource": null,
-                              "Image": null,
-                              "Translucency": 0,
-                              "FillMode": 1,
-                              "ScaleMode": 0,
-                              "CornerRadius": 0
+                            "Type": "*fyne.Container",
+                            "Layout": "Stack",
+                            "Name": "nextPreview",
+                            "Objects": [
+                              {
+                                "Type": "*canvas.Image",
+                                "Struct": {
+                                  "Hidden": false,
+                                  "File": "/Users/andy/Code/Andy/slydes/img/slide.png",
+                                  "Resource": null,
+                                  "Image": null,
+                                  "Translucency": 0,
+                                  "FillMode": 1,
+                                  "ScaleMode": 0,
+                                  "CornerRadius": 0
+                                }
+                              }
+                            ],
+                            "Properties": {
+                              "layout": "Stack",
+                              "name": "nextPreview"
                             }
                           },
                           {
                             "Type": "*widget.Toolbar",
+                            "Name": "controls",
                             "Struct": {
                               "Items": [
                                 {
@@ -174,7 +203,8 @@
                                 "Monospace": false,
                                 "Symbol": false,
                                 "TabWidth": 0,
-                                "Underline": false
+                                "Underline": false,
+                                "Strikethrough": false
                               },
                               "Truncation": 0,
                               "Importance": 0,
@@ -193,7 +223,10 @@
                       }
                     }
                   }
-                ]
+                ],
+                "Properties": {
+                  "layout": "Stack"
+                }
               }
             }
           }

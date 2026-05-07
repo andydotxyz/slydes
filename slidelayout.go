@@ -51,6 +51,10 @@ func (s *slide) layoutTitleSlide(size fyne.Size, scale float32) {
 }
 
 func (s *slide) layoutFallback(size fyne.Size, scale float32) {
+	if len(s.content.Objects) == 0 {
+		return
+	}
+
 	skip := 1
 	pad := theme.Padding() * scale
 	y := pad
