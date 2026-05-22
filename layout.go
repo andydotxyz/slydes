@@ -5,6 +5,9 @@ import (
 	"fyne.io/fyne/v2/container"
 )
 
+// slideRatio is the aspect ratio (width / height) every slide is rendered at.
+const slideRatio = float32(16) / float32(9)
+
 type aspectLayout struct {
 	ratio float32
 }
@@ -30,5 +33,5 @@ func (a *aspectLayout) MinSize([]fyne.CanvasObject) fyne.Size {
 }
 
 func newAspectContainer(children ...fyne.CanvasObject) *fyne.Container {
-	return container.New(&aspectLayout{ratio: 16.0 / 9.0}, children...)
+	return container.New(&aspectLayout{ratio: slideRatio}, children...)
 }

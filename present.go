@@ -57,7 +57,7 @@ func (p *presenting) updateProgress() {
 	p.progressFill.Refresh()
 
 	p.presentLay.fraction = p.fraction()
-	target := fyne.NewSize(p.live.Canvas().Size().Width*p.presentLay.fraction, progressHeight)
+	target := fyne.NewSize(p.presentLay.slideSize.Width*p.presentLay.fraction, progressHeight)
 	canvas.NewSizeAnimation(p.progressFill.Size(), target, canvas.DurationStandard,
 		func(s fyne.Size) {
 			p.progressFill.Resize(s)
@@ -65,18 +65,31 @@ func (p *presenting) updateProgress() {
 }
 
 // presentLayout fills the window with the slide and pins a progress bar of width
-// proportional to fraction along the bottom edge.
+// proportional to fraction along the bottom edge of the slide. The slide is
+// letterboxed to slideRatio, so the bar tracks the slide rather than the window.
 type presentLayout struct {
 	fraction float32
+
+	slidePos  fyne.Position
+	slideSize fyne.Size
 }
 
 func (l *presentLayout) Layout(objs []fyne.CanvasObject, size fyne.Size) {
 	objs[0].Resize(size)
 	objs[0].Move(fyne.Position{})
 
+	width, height := size.Width, size.Height
+	if width > height*slideRatio {
+		width = height * slideRatio
+	} else {
+		height = width / slideRatio
+	}
+	l.slidePos = fyne.NewPos((size.Width-width)/2, (size.Height-height)/2)
+	l.slideSize = fyne.NewSize(width, height)
+
 	fill := objs[1]
-	fill.Resize(fyne.NewSize(size.Width*l.fraction, progressHeight))
-	fill.Move(fyne.NewPos(0, size.Height-progressHeight))
+	fill.Resize(fyne.NewSize(width*l.fraction, progressHeight))
+	fill.Move(fyne.NewPos(l.slidePos.X, l.slidePos.Y+height-progressHeight))
 }
 
 func (l *presentLayout) MinSize(objs []fyne.CanvasObject) fyne.Size {
