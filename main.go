@@ -55,6 +55,7 @@ func nextSlide() {
 
 	p.id++
 	p.slide.setSource(p.items[p.id])
+	p.updateProgress()
 
 	if p.preview != nil {
 		p.preview.setSource(p.items[p.id])
@@ -78,6 +79,7 @@ func prevSlide() {
 
 	p.id--
 	p.slide.setSource(p.items[p.id])
+	p.updateProgress()
 
 	if p.preview != nil {
 		p.preview.setSource(p.items[p.id])
