@@ -54,15 +54,15 @@ func nextSlide() {
 	}
 
 	p.id++
-	p.slide.setSource(p.items[p.id])
+	p.slide.setSource(p.items[p.id], p.id)
 	p.updateProgress()
 
 	if p.preview != nil {
-		p.preview.setSource(p.items[p.id])
+		p.preview.setSource(p.items[p.id], p.id)
 		if p.id < len(p.items)-1 {
-			p.next.setSource(p.items[p.id+1])
+			p.next.setSource(p.items[p.id+1], p.id+1)
 		} else {
-			p.next.setSource("")
+			p.next.setSource("", p.id+1)
 		}
 	}
 }
@@ -78,15 +78,15 @@ func prevSlide() {
 	}
 
 	p.id--
-	p.slide.setSource(p.items[p.id])
+	p.slide.setSource(p.items[p.id], p.id)
 	p.updateProgress()
 
 	if p.preview != nil {
-		p.preview.setSource(p.items[p.id])
+		p.preview.setSource(p.items[p.id], p.id)
 		if p.id < len(p.items)-1 {
-			p.next.setSource(p.items[p.id+1])
+			p.next.setSource(p.items[p.id+1], p.id+1)
 		} else {
-			p.next.setSource("")
+			p.next.setSource("", p.id+1)
 		}
 	}
 }

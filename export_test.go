@@ -8,7 +8,12 @@ import (
 
 func TestExport(t *testing.T) {
 	s := newSlides()
-	s.parseSource(`# Slide 1
+	s.parseSource(`+++
+name = "Presenter"
+footer = "Slydes"
++++
+
+# Slide 1
 ## Subhead
 
 ---

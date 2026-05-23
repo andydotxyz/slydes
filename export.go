@@ -28,17 +28,23 @@ func export(s *slides, w io.Writer) error {
 	})
 	pageWidth, totalHeight := doc.GetPageSize()
 	pageHeight := pageWidth * (9.0 / 16.0)
-	for _, item := range s.items {
+	for i, item := range s.items {
 		doc.AddPage()
 
 		var sl *slide
 		fyne.DoAndWait(func() {
-			sl = newSlide(item, s)
+			sl = newSlide(item, i, s)
 			sl.Resize(fyne.NewSize(float32(pageWidth), float32(pageHeight)))
 
-			err := renderObjectsToPDF(doc, sl.content, fyne.Position{Y: float32(totalHeight-pageHeight) / 2})
+			off := fyne.Position{Y: float32(totalHeight-pageHeight) / 2}
+			err := renderObjectsToPDF(doc, sl.content, off)
 			if err != nil {
 				fyne.LogError("Failed to encode the PDF", err)
+			}
+			if sl.footer.Visible() {
+				if err := renderObjectsToPDF(doc, sl.footer, off); err != nil {
+					fyne.LogError("Failed to encode the PDF", err)
+				}
 			}
 		})
 	}

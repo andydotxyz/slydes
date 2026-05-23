@@ -2,6 +2,7 @@ package main
 
 import (
 	"fyne.io/fyne/v2"
+	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/theme"
 )
 
@@ -82,5 +83,24 @@ func (s *slide) layoutFallback(size fyne.Size, scale float32) {
 func (s *slide) layoutImage(size fyne.Size) {
 	for _, o := range s.content.Objects[1:] {
 		o.Resize(size)
+	}
+}
+
+// layoutFooter positions the three footer labels along the bottom of the slide.
+// They are sized at half the body text size and lifted off the bottom edge by the
+// progress bar height so the bar never overlaps them.
+func (s *slide) layoutFooter(size fyne.Size) {
+	scale := size.Height / slideHeight
+	pad := theme.Padding() * scale
+	col := s.footerColor()
+
+	for _, t := range []*canvas.Text{s.footerLeft, s.footerCenter, s.footerRight} {
+		t.Color = col
+		t.TextSize = theme.TextSize() * scale / 2
+		t.Refresh()
+
+		height := t.MinSize().Height
+		t.Resize(fyne.NewSize(size.Width-pad*2, height))
+		t.Move(fyne.NewPos(pad, size.Height-progressHeight*2-height))
 	}
 }

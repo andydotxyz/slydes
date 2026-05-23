@@ -98,7 +98,7 @@ func (g *gui) makeUI() fyne.CanvasObject {
 		})
 	}))
 
-	g.render = newSlide("", g.s)
+	g.render = newSlide("", 0, g.s)
 	g.content.OnChanged = func(s string) {
 		g.refresh = true
 	}
@@ -196,7 +196,8 @@ func (g *gui) refreshSlide() {
 		return
 	}
 
-	g.render.setSource(g.s.currentSource())
+	id, _ := g.s.current.Get()
+	g.render.setSource(g.s.currentSource(), id)
 }
 
 type primaryAction struct {

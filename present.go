@@ -7,7 +7,6 @@ import (
 	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/driver/desktop"
-	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
 )
 
@@ -35,15 +34,9 @@ func (p *presenting) fraction() float32 {
 	return float32(p.id) / float32(len(p.items)-1)
 }
 
-// progressColor picks the bar colour from the current slide: header slides use the
-// header background colour, all others use the standard background colour.
+// progressColor picks the bar colour from the current slide, matching its footer.
 func (p *presenting) progressColor() color.Color {
-	th := p.slide.parent.theme
-	v := fyne.CurrentApp().Settings().ThemeVariant()
-	if p.slide.variant == headingSlide {
-		return th.Color(colorNameHeaderBackground, v)
-	}
-	return th.Color(theme.ColorNameBackground, v)
+	return p.slide.footerColor()
 }
 
 // updateProgress recolours the progress bar and animates its width to match the
@@ -64,9 +57,11 @@ func (p *presenting) updateProgress() {
 		}).Start()
 }
 
-// presentLayout fills the window with the slide and pins a progress bar of width
-// proportional to fraction along the bottom edge of the slide. The slide is
-// letterboxed to slideRatio, so the bar tracks the slide rather than the window.
+// presentLayout fills the window with the slide and pins the progress bar along
+// the bottom edge of the slide. The slide is letterboxed to slideRatio, so the
+// bar tracks the slide rather than the window.
+//
+// objs are: the slide and the progress fill.
 type presentLayout struct {
 	fraction float32
 
@@ -101,12 +96,13 @@ func (g *gui) showPresentWindow() {
 
 	items := g.s.items
 	id, _ := g.s.current.Get()
-	content := newSlide(items[id], g.s)
+	content := newSlide(items[id], id, g.s)
 	w2.SetPadded(false)
 
 	p := &presenting{live: w2, slide: content, id: id, items: items}
 	p.progressFill = canvas.NewRectangle(p.progressColor())
 	p.presentLay = &presentLayout{fraction: p.fraction()}
+
 	w2.SetContent(container.New(p.presentLay, newAspectContainer(content), p.progressFill))
 	addPresentationKeys(w2)
 
@@ -123,13 +119,13 @@ func (g *gui) showPresentWindow() {
 		w3 := pres.makeWindow(a)
 		p.control = w3
 
-		preview := newSlide(items[id], g.s)
+		preview := newSlide(items[id], id, g.s)
 		p.preview = preview
 		nextString := ""
 		if len(items) > id+1 {
 			nextString = items[id+1]
 		}
-		next := newSlide(nextString, g.s)
+		next := newSlide(nextString, id+1, g.s)
 		p.next = next
 
 		pres.controls.Items[0].(*widget.ToolbarAction).OnActivated = prevSlide

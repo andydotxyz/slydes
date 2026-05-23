@@ -11,11 +11,13 @@ A presentation app using Fyne and Markdown
 ## Format
 
 Each presentation is a simple markdown file.
-It also supports toml front matter for configuration, such as theme.
+It also supports toml front matter for configuration, such as theme and footer info.
 
 ```md
 +++
 theme = "matrix"
+footer = "My Presentation Footer"
+name = "Mx Presenter"
 +++
 
 # Heading

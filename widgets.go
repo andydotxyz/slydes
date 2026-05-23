@@ -27,7 +27,9 @@ func (s *slideButton) Tapped(_ *fyne.PointEvent) {
 }
 
 func (g *gui) newSlideButton(id int) fyne.CanvasObject {
-	slide := newAspectContainer(newSlide(g.s.items[id], g.s))
+	sl := newSlide(g.s.items[id], id, g.s)
+	sl.hideFooter()
+	slide := newAspectContainer(sl)
 	button := &slideButton{id: id, content: slide, g: g}
 	button.ExtendBaseWidget(button)
 	return button
