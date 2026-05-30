@@ -24,6 +24,7 @@ import (
 type content struct {
 	heading, subheading string
 	bgpath              string
+	notes               string
 
 	content []fyne.CanvasObject
 }
@@ -136,6 +137,25 @@ func (p *parser) Render(_ io.Writer, source []byte, n ast.Node) error {
 			bg := canvas.NewRectangle(color.Gray{Y: 0xcc})
 			p.c.content = append(p.c.content, container.NewStack(bg, inline))
 			tmpText = ""
+		case "HTMLBlock":
+			lines := n.Lines()
+			var sb strings.Builder
+			for i := 0; i < lines.Len(); i++ {
+				seg := lines.At(i)
+				sb.Write(source[seg.Start:seg.Stop])
+			}
+			if hb, ok := n.(*ast.HTMLBlock); ok && hb.HasClosure() {
+				sb.Write(hb.ClosureLine.Value(source))
+			}
+			p.appendComments(sb.String())
+		case "RawHTML":
+			rh := n.(*ast.RawHTML)
+			var sb strings.Builder
+			for i := 0; i < rh.Segments.Len(); i++ {
+				seg := rh.Segments.At(i)
+				sb.Write(source[seg.Start:seg.Stop])
+			}
+			p.appendComments(sb.String())
 		case "FencedCodeBlock", "CodeBlock":
 			language := ""
 			if c, ok := n.(*ast.FencedCodeBlock); ok {
@@ -182,6 +202,31 @@ func (p *parser) Render(_ io.Writer, source []byte, n ast.Node) error {
 		return ast.WalkContinue, nil
 	})
 	return err
+}
+
+// appendComments scans raw HTML for <!-- ... --> comments and appends their
+// trimmed contents to the slide's presenter notes, one comment per line.
+func (p *parser) appendComments(raw string) {
+	s := raw
+	for {
+		start := strings.Index(s, "<!--")
+		if start < 0 {
+			return
+		}
+		rest := s[start+4:]
+		end := strings.Index(rest, "-->")
+		if end < 0 {
+			return
+		}
+		text := strings.TrimSpace(rest[:end])
+		if text != "" {
+			if p.c.notes != "" {
+				p.c.notes += "\n"
+			}
+			p.c.notes += text
+		}
+		s = rest[end+3:]
+	}
 }
 
 func (p *parser) handleExitNode(n ast.Node) error {

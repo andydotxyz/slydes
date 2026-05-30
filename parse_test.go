@@ -30,3 +30,23 @@ func TestParseNestedBullets(t *testing.T) {
 		t.Errorf("expected second bullet indent 1, got %d", b2.indent)
 	}
 }
+
+func TestParseHTMLCommentsAsNotes(t *testing.T) {
+	s := newSlides()
+
+	c := s.parseMarkdown("# Heading\n\n<!-- block note -->\n\nSome body <!-- inline note --> text.\n")
+	want := "block note\ninline note"
+	if c.notes != want {
+		t.Errorf("expected notes %q, got %q", want, c.notes)
+	}
+
+	c2 := s.parseMarkdown("<!--   leading and trailing whitespace   -->")
+	if c2.notes != "leading and trailing whitespace" {
+		t.Errorf("expected trimmed note, got %q", c2.notes)
+	}
+
+	c3 := s.parseMarkdown("# Heading\n\njust text\n")
+	if c3.notes != "" {
+		t.Errorf("expected empty notes, got %q", c3.notes)
+	}
+}

@@ -64,6 +64,7 @@ func nextSlide() {
 		} else {
 			p.next.setSource("", p.id+1)
 		}
+		p.updateNotes()
 	}
 }
 
@@ -88,6 +89,7 @@ func prevSlide() {
 		} else {
 			p.next.setSource("", p.id+1)
 		}
+		p.updateNotes()
 	}
 }
 

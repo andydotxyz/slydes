@@ -29,6 +29,7 @@ type slide struct {
 	footer              *fyne.Container
 	bg                  fyne.CanvasObject
 	heading, subheading *canvas.Text
+	notes               string
 
 	footerLeft, footerCenter, footerRight *canvas.Text
 }
@@ -101,6 +102,7 @@ func (s *slide) MinSize() fyne.Size {
 }
 
 func (s *slide) addContent(items *[]fyne.CanvasObject, in content) {
+	s.notes = in.notes
 	if in.bgpath != "" {
 		img := canvas.NewImageFromFile(in.bgpath)
 		img.ScaleMode = canvas.ImageScaleFastest
@@ -145,6 +147,7 @@ func (s *slide) setSource(data string, index int) {
 	if data == "" {
 		s.bg = canvas.NewRectangle(color.Black)
 		s.content.Objects = []fyne.CanvasObject{}
+		s.notes = ""
 		s.footer.Hide()
 		s.Refresh()
 		return

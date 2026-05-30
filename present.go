@@ -29,6 +29,15 @@ type presenting struct {
 
 	progressFill *canvas.Rectangle
 	presentLay   *presentLayout
+	notesLabel   *widget.Label
+}
+
+// updateNotes copies the current preview slide's notes into the presenter UI.
+func (p *presenting) updateNotes() {
+	if p.notesLabel == nil || p.preview == nil {
+		return
+	}
+	p.notesLabel.SetText(p.preview.notes)
 }
 
 // fraction returns how far through the deck we are, from 0 (first slide) to 1 (last).
@@ -143,6 +152,9 @@ func (g *gui) showPresentWindow() {
 
 		pres.currentPreview.Objects = []fyne.CanvasObject{newAspectContainer(preview)}
 		pres.nextPreview.Objects = []fyne.CanvasObject{newAspectContainer(next)}
+		p.notesLabel = pres.notes
+		pres.notes.SizeName = theme.SizeNameSubHeadingText
+		p.updateNotes()
 
 		addPresentationKeys(w3)
 		w3.Show()

@@ -16,6 +16,7 @@ type presenterGui struct {
 
 	controls       *widget.Toolbar
 	timer          *widget.Label
+	notes          *widget.Label
 	currentPreview *fyne.Container
 	nextPreview    *fyne.Container
 }
@@ -33,6 +34,7 @@ func (g *presenterGui) makeUI() fyne.CanvasObject {
 		widget.NewToolbarAction(theme.LogoutIcon(), func() {}),
 	)
 	g.timer = &widget.Label{Text: "0:00:00", TextStyle: fyne.TextStyle{Bold: true, Italic: false, Monospace: true, Symbol: false, TabWidth: 0, Underline: false, Strikethrough: false}, Alignment: 1, Wrapping: 0}
+	g.notes = &widget.Label{Text: "", TextStyle: fyne.TextStyle{Monospace: true}, Wrapping: fyne.TextWrapWord}
 	g.currentPreview = container.NewStack(
 		&canvas.Image{File: "/Users/andy/Code/Andy/slydes/img/slide.png", FillMode: canvas.ImageFillContain, CornerRadius: 0.000000})
 	g.nextPreview = container.NewStack(
@@ -48,7 +50,7 @@ func (g *presenterGui) makeUI() fyne.CanvasObject {
 				nil,
 				nil,
 				nil,
-				widget.NewLabelWithStyle("Presenter Notes", 0, fyne.TextStyle{Bold: false, Italic: false, Monospace: true, Symbol: false, TabWidth: 0, Underline: false, Strikethrough: false})), Trailing: container.NewBorder(
+				g.notes), Trailing: container.NewBorder(
 
 				widget.NewLabelWithStyle("Next Slide", 0, fyne.TextStyle{Bold: true, Italic: false, Monospace: false, Symbol: false, TabWidth: 0, Underline: false, Strikethrough: false}),
 
