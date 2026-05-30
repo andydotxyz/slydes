@@ -102,3 +102,11 @@ func exitPresent() {
 	}
 	currentPresenting = nil
 }
+
+func togglePresent() {
+	preview := currentPresenting.control.Content()
+	view := currentPresenting.live.Content()
+
+	currentPresenting.control.SetContent(view)
+	currentPresenting.live.SetContent(preview)
+}

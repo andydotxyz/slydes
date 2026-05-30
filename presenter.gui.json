@@ -184,6 +184,10 @@
                                   "Type": "Spacer"
                                 },
                                 {
+                                  "Icon": "ViewRefreshIcon",
+                                  "Type": "Action"
+                                },
+                                {
                                   "Icon": "LogoutIcon",
                                   "Type": "Action"
                                 }

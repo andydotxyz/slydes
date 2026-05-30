@@ -1,16 +1,21 @@
 package main
 
 import (
+	_ "embed"
 	"image/color"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/driver/desktop"
+	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
 )
 
 var currentPresenting *presenting
+
+//go:embed "swap.svg"
+var resourceSwapSvg []byte
 
 // progressHeight is the thickness, in points, of the presentation progress bar.
 const progressHeight = float32(5)
@@ -130,7 +135,10 @@ func (g *gui) showPresentWindow() {
 
 		pres.controls.Items[0].(*widget.ToolbarAction).OnActivated = prevSlide
 		pres.controls.Items[1].(*widget.ToolbarAction).OnActivated = nextSlide
-		pres.controls.Items[3].(*widget.ToolbarAction).OnActivated = exitPresent
+		pres.controls.Items[3].(*widget.ToolbarAction).Icon = theme.NewThemedResource(
+			fyne.NewStaticResource("swap.svg", resourceSwapSvg))
+		pres.controls.Items[3].(*widget.ToolbarAction).OnActivated = togglePresent
+		pres.controls.Items[4].(*widget.ToolbarAction).OnActivated = exitPresent
 		pres.controls.Refresh()
 
 		pres.currentPreview.Objects = []fyne.CanvasObject{newAspectContainer(preview)}
@@ -152,6 +160,8 @@ func addPresentationKeys(w fyne.Window) {
 		switch k.Name {
 		case fyne.KeyEscape:
 			exitPresent()
+		case fyne.KeyT:
+			togglePresent()
 		case fyne.KeyLeft, fyne.KeyUp:
 			prevSlide()
 		case fyne.KeyRight, fyne.KeyDown, fyne.KeySpace, fyne.KeyEnter, fyne.KeyReturn:

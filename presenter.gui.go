@@ -29,6 +29,7 @@ func (g *presenterGui) makeUI() fyne.CanvasObject {
 		widget.NewToolbarAction(theme.NavigateBackIcon(), func() {}),
 		widget.NewToolbarAction(theme.NavigateNextIcon(), func() {}),
 		widget.NewToolbarSpacer(),
+		widget.NewToolbarAction(theme.ViewRefreshIcon(), func() {}),
 		widget.NewToolbarAction(theme.LogoutIcon(), func() {}),
 	)
 	g.timer = &widget.Label{Text: "0:00:00", TextStyle: fyne.TextStyle{Bold: true, Italic: false, Monospace: true, Symbol: false, TabWidth: 0, Underline: false, Strikethrough: false}, Alignment: 1, Wrapping: 0}
