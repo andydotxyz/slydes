@@ -3,7 +3,7 @@ module slydes
 go 1.22.0
 
 require (
-	fyne.io/fyne/v2 v2.7.5-0.20260605075206-fb521fbc6ab2
+	fyne.io/fyne/v2 v2.7.5-0.20260607210123-dd17c19a0a3d
 	github.com/BurntSushi/toml v1.5.0
 	github.com/alecthomas/chroma/v2 v2.14.0
 	github.com/go-pdf/fpdf v0.8.0
