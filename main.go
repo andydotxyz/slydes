@@ -82,9 +82,18 @@ func exitPresent() {
 }
 
 func togglePresent() {
+	if currentPresenting == nil {
+		return
+	}
+
 	preview := currentPresenting.control.Content()
 	view := currentPresenting.live.Content()
 
+	currentPresenting.flipped = !currentPresenting.flipped
 	currentPresenting.control.SetContent(view)
 	currentPresenting.live.SetContent(preview)
+
+	currentPresenting.updateProgress()
+	// in case of aspect ratio change
+	go precaptureSlides(currentPresenting)
 }

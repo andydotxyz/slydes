@@ -139,10 +139,6 @@ vec3 drawCard(vec3 bg, vec2 frag, vec2 center, vec2 halfSize, float ang, sampler
 	vec2 uv = clamp(local / halfSize * 0.5 + 0.5, 0.0, 1.0);
 	vec3 tc = texture2D(tex, uv).rgb;
 
-	// Subtle cool rim light around the very edge of the card.
-	float em = max(abs(local.x) / halfSize.x, abs(local.y) / halfSize.y);
-	tc += vec3(0.2, 0.25, 0.35) * smoothstep(0.96, 1.0, em) * 0.5;
-
 	// Antialiased coverage of the card rectangle (no derivative funcs needed).
 	float e = 1.5;
 	float covx = 1.0 - smoothstep(halfSize.x - e, halfSize.x + e, abs(local.x));

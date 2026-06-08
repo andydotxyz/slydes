@@ -24,14 +24,16 @@ const progressHeight = float32(5)
 type presenting struct {
 	live, control        fyne.Window
 	slide, preview, next *slide
+	deck                 *slides
 	body                 *fyne.Container // the live window's aspect container
+	flipped              bool
 
 	id    int
 	items []string
 
-	progressFill     *canvas.Rectangle
-	progressFraction float32
-	notesLabel       *widget.Label
+	progressBox, progressFill *canvas.Rectangle
+	progressFraction          float32
+	notesLabel                *widget.Label
 
 	captures  []image.Image // one rendered bitmap per slide, for transition textures
 	ready     bool          // true once every slide has been pre-captured
@@ -61,9 +63,8 @@ func (p *presenting) updateProgress() {
 		return
 	}
 
-	size := p.live.Content().Size()
-	p.progressFill.Move(fyne.NewPos(0, size.Height-progressHeight))
-	p.progressFill.FillColor = p.slide.footerColor()
+	p.progressFill.FillColor = p.deck.theme.Color(colorNameHeaderBackground,
+		fyne.CurrentApp().Settings().ThemeVariant())
 	p.progressFill.Refresh()
 
 	p.progressFraction = p.fraction()
@@ -83,13 +84,16 @@ func (g *gui) showPresentWindow() {
 	w2.SetPadded(false)
 
 	body := newAspectContainer(content)
-	p := &presenting{live: w2, slide: content, body: body, id: id, items: items}
+	p := &presenting{live: w2, slide: content, deck: g.s, body: body, id: id, items: items}
+	p.progressBox = canvas.NewRectangle(color.Black)
+	p.progressBox.SetMinSize(fyne.NewSquareSize(progressHeight))
 	p.progressFill = canvas.NewRectangle(p.slide.footerColor())
-	p.progressFill.Resize(fyne.NewSquareSize(progressHeight))
+	p.progressFill.Resize(fyne.NewSize(0, progressHeight))
 	w2.SetContent(
 		container.NewStack(canvas.NewRectangle(color.Black),
 			body,
-			container.NewWithoutLayout(p.progressFill)))
+			container.NewBorder(nil, container.NewStack(p.progressBox,
+				container.NewWithoutLayout(p.progressFill)), nil, nil)))
 
 	addPresentationKeys(w2)
 
@@ -104,6 +108,7 @@ func (g *gui) showPresentWindow() {
 
 		pres := newPresenterGUI()
 		w3 := pres.makeWindow(a)
+		w3.SetPadded(false)
 		p.control = w3
 
 		preview := newSlide(items[id], id, g.s)

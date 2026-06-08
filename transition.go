@@ -19,7 +19,12 @@ const transitionDuration = 1300 * time.Millisecond
 // goroutine (Capture reads the painted front buffer, so each slide needs a paint
 // before we grab it) and marks the presentation ready once every slide is held.
 func precaptureSlides(p *presenting) {
-	p.progressFill.Hide()
+	win := p.live
+	if currentPresenting != nil && currentPresenting.flipped {
+		win = p.control
+	}
+
+	p.progressBox.Hide()
 	caps := make([]image.Image, len(p.items))
 	for i := range p.items {
 		idx := i
@@ -29,7 +34,7 @@ func precaptureSlides(p *presenting) {
 		// Allow a few frames for the slide to reach the front buffer.
 		time.Sleep(60 * time.Millisecond)
 		fyne.DoAndWait(func() {
-			caps[idx] = p.live.Canvas().Capture()
+			caps[idx] = win.Canvas().Capture()
 		})
 	}
 	fyne.DoAndWait(func() {
@@ -37,7 +42,7 @@ func precaptureSlides(p *presenting) {
 	})
 
 	p.captures = caps
-	p.progressFill.Show()
+	p.progressBox.Show()
 	p.ready = true
 }
 
@@ -85,11 +90,16 @@ func startSlideTransition(p *presenting, from, to int) {
 	}
 
 	p.animating = true
-	p.live.SetContent(
+	win := p.live
+	if currentPresenting != nil && currentPresenting.flipped {
+		win = p.control
+	}
+	win.SetContent(
 		container.NewStack(canvas.NewRectangle(color.Black),
 			p.body,
 			shader,
-			container.NewWithoutLayout(p.progressFill)))
+			container.NewBorder(nil, container.NewStack(p.progressBox,
+				container.NewWithoutLayout(p.progressFill)), nil, nil)))
 
 	seconds := float32(transitionDuration.Seconds())
 	finished := false
@@ -115,10 +125,17 @@ func startSlideTransition(p *presenting, from, to int) {
 // incoming slide filling the frame, so the hand off is seamless.
 func finishSlideTransition(p *presenting) {
 	applyLiveSlide(p)
-	p.live.SetContent(
+	p.animating = true
+	win := p.live
+	if currentPresenting != nil && currentPresenting.flipped {
+		win = p.control
+	}
+
+	win.SetContent(
 		container.NewStack(canvas.NewRectangle(color.Black),
 			p.body,
-			container.NewWithoutLayout(p.progressFill)))
+			container.NewBorder(nil, container.NewStack(p.progressBox,
+				container.NewWithoutLayout(p.progressFill)), nil, nil)))
 
 	p.animating = false
 }
