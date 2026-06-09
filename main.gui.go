@@ -64,6 +64,22 @@ func (g *gui) makeUI() fyne.CanvasObject {
 		})
 	}
 
+	// refreshCurrentPreview re-renders only the current slide's thumbnail. Used
+	// when editing within a slide (the slide count is unchanged) so we avoid
+	// re-parsing and re-rendering every slide on each keystroke.
+	refreshCurrentPreview := func() {
+		id, _ := g.s.current.Get()
+		count, _ := g.s.count.Get()
+		if id < 0 || id >= count || id >= len(grid.Objects) {
+			return
+		}
+		fyne.DoAndWait(func() {
+			slide := g.newSlideButton(id)
+			grid.Objects[id] = container.NewPadded(slide)
+		})
+		fyne.Do(grid.Refresh)
+	}
+
 	var previewScroll *container.Scroll
 	previews := container.NewStack(grid, container.NewWithoutLayout(border))
 	go refreshPreviews()
@@ -117,9 +133,18 @@ func (g *gui) makeUI() fyne.CanvasObject {
 			}
 			g.refresh = false
 
+			oldCount, _ := g.s.count.Get()
 			g.s.parseSource(g.content.Text)
-			go refreshPreviews()
+			newCount, _ := g.s.count.Get()
 			g.slideForCursor()
+
+			// Only rebuild every thumbnail when slides are added or removed;
+			// editing within a slide just refreshes that one thumbnail.
+			if newCount != oldCount {
+				go refreshPreviews()
+			} else {
+				go refreshCurrentPreview()
+			}
 
 			fyne.Do(func() {
 				moveHighlight(true)
