@@ -128,11 +128,19 @@ func (p *parser) Render(_ io.Writer, source []byte, n ast.Node) error {
 				p.c.content = append(p.c.content, img)
 			}
 		case "CodeSpan":
-			if !p.list && tmpText != "" {
-				p.c.content = append(p.c.content, canvas.NewText(tmpText, color.Black))
+			p.code = true
+
+			// Inside a list the bullet renders as a single line of text, so keep
+			// inline code as part of that text rather than emitting a separate
+			// styled box (which would render before the bullet).
+			if p.list {
+				tmpText += string(n.Text(source))
+				break
 			}
 
-			p.code = true
+			if tmpText != "" {
+				p.c.content = append(p.c.content, canvas.NewText(tmpText, color.Black))
+			}
 			inline := canvas.NewText(string(n.Text(source)), color.Black)
 			bg := canvas.NewRectangle(color.Gray{Y: 0xcc})
 			p.c.content = append(p.c.content, container.NewStack(bg, inline))
