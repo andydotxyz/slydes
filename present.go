@@ -2,6 +2,7 @@ package main
 
 import (
 	_ "embed"
+	"image"
 	"image/color"
 
 	"fyne.io/fyne/v2"
@@ -23,13 +24,20 @@ const progressHeight = float32(5)
 type presenting struct {
 	live, control        fyne.Window
 	slide, preview, next *slide
+	deck                 *slides
+	body                 *fyne.Container // the live window's aspect container
+	flipped              bool
 
 	id    int
 	items []string
 
-	progressFill *canvas.Rectangle
-	presentLay   *presentLayout
-	notesLabel   *widget.Label
+	progressBox, progressFill *canvas.Rectangle
+	progressFraction          float32
+	notesLabel                *widget.Label
+
+	captures  []image.Image // one rendered bitmap per slide, for transition textures
+	ready     bool          // true once every slide has been pre-captured
+	animating bool          // true while a transition shader is on screen
 }
 
 // updateNotes copies the current preview slide's notes into the presenter UI.
@@ -48,11 +56,6 @@ func (p *presenting) fraction() float32 {
 	return float32(p.id) / float32(len(p.items)-1)
 }
 
-// progressColor picks the bar colour from the current slide, matching its footer.
-func (p *presenting) progressColor() color.Color {
-	return p.slide.footerColor()
-}
-
 // updateProgress recolours the progress bar and animates its width to match the
 // current slide.
 func (p *presenting) updateProgress() {
@@ -60,49 +63,16 @@ func (p *presenting) updateProgress() {
 		return
 	}
 
-	p.progressFill.FillColor = p.progressColor()
+	p.progressFill.FillColor = p.deck.theme.Color(colorNameHeaderBackground,
+		fyne.CurrentApp().Settings().ThemeVariant())
 	p.progressFill.Refresh()
 
-	p.presentLay.fraction = p.fraction()
-	target := fyne.NewSize(p.presentLay.slideSize.Width*p.presentLay.fraction, progressHeight)
-	canvas.NewSizeAnimation(p.progressFill.Size(), target, canvas.DurationStandard,
+	p.progressFraction = p.fraction()
+	target := fyne.NewSize(p.body.Size().Width*p.progressFraction, progressHeight)
+	canvas.NewSizeAnimation(p.progressFill.Size(), target, transitionDuration,
 		func(s fyne.Size) {
 			p.progressFill.Resize(s)
 		}).Start()
-}
-
-// presentLayout fills the window with the slide and pins the progress bar along
-// the bottom edge of the slide. The slide is letterboxed to slideRatio, so the
-// bar tracks the slide rather than the window.
-//
-// objs are: the slide and the progress fill.
-type presentLayout struct {
-	fraction float32
-
-	slidePos  fyne.Position
-	slideSize fyne.Size
-}
-
-func (l *presentLayout) Layout(objs []fyne.CanvasObject, size fyne.Size) {
-	objs[0].Resize(size)
-	objs[0].Move(fyne.Position{})
-
-	width, height := size.Width, size.Height
-	if width > height*slideRatio {
-		width = height * slideRatio
-	} else {
-		height = width / slideRatio
-	}
-	l.slidePos = fyne.NewPos((size.Width-width)/2, (size.Height-height)/2)
-	l.slideSize = fyne.NewSize(width, height)
-
-	fill := objs[1]
-	fill.Resize(fyne.NewSize(width*l.fraction, progressHeight))
-	fill.Move(fyne.NewPos(l.slidePos.X, l.slidePos.Y+height-progressHeight))
-}
-
-func (l *presentLayout) MinSize(objs []fyne.CanvasObject) fyne.Size {
-	return objs[0].MinSize()
 }
 
 func (g *gui) showPresentWindow() {
@@ -113,11 +83,18 @@ func (g *gui) showPresentWindow() {
 	content := newSlide(items[id], id, g.s)
 	w2.SetPadded(false)
 
-	p := &presenting{live: w2, slide: content, id: id, items: items}
-	p.progressFill = canvas.NewRectangle(p.progressColor())
-	p.presentLay = &presentLayout{fraction: p.fraction()}
+	body := newAspectContainer(content)
+	p := &presenting{live: w2, slide: content, deck: g.s, body: body, id: id, items: items}
+	p.progressBox = canvas.NewRectangle(color.Black)
+	p.progressBox.SetMinSize(fyne.NewSquareSize(progressHeight))
+	p.progressFill = canvas.NewRectangle(p.slide.footerColor())
+	p.progressFill.Resize(fyne.NewSize(0, progressHeight))
+	w2.SetContent(
+		container.NewStack(canvas.NewRectangle(color.Black),
+			body,
+			container.NewBorder(nil, container.NewStack(p.progressBox,
+				container.NewWithoutLayout(p.progressFill)), nil, nil)))
 
-	w2.SetContent(container.New(p.presentLay, newAspectContainer(content), p.progressFill))
 	addPresentationKeys(w2)
 
 	a := fyne.CurrentApp()
@@ -131,6 +108,7 @@ func (g *gui) showPresentWindow() {
 
 		pres := newPresenterGUI()
 		w3 := pres.makeWindow(a)
+		w3.SetPadded(false)
 		p.control = w3
 
 		preview := newSlide(items[id], id, g.s)
@@ -165,6 +143,10 @@ func (g *gui) showPresentWindow() {
 
 	currentPresenting = p
 	w2.Show()
+
+	// Render and cache a bitmap of every slide so transitions can pass the
+	// outgoing and incoming slides to the shuffle shader as textures.
+	go precaptureSlides(p)
 }
 
 func addPresentationKeys(w fyne.Window) {

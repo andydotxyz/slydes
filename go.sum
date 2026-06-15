@@ -1,7 +1,9 @@
-fyne.io/fyne/v2 v2.7.4-0.20260507154311-02f0ef801bed h1:S8bIguwTrDiOpQy3L3lllkvlomi5zUxOMO74rhE1QPA=
-fyne.io/fyne/v2 v2.7.4-0.20260507154311-02f0ef801bed/go.mod h1:3FRSe4wPFsT9iFAH/HKZf6b7zqBQXupvIRJ9mTz/k90=
-fyne.io/systray v1.12.0 h1:CA1Kk0e2zwFlxtc02L3QFSiIbxJ/P0n582YrZHT7aTM=
-fyne.io/systray v1.12.0/go.mod h1:RVwqP9nYMo7h5zViCBHri2FgjXF7H2cub7MAq4NSoLs=
+fyne.io/fyne/v2 v2.7.5-0.20260605075206-fb521fbc6ab2 h1:SkN7XHgDM3hDGTB3Rgcw5/NsyfvETVvvg7EtEZz0y2E=
+fyne.io/fyne/v2 v2.7.5-0.20260605075206-fb521fbc6ab2/go.mod h1:MEWwWTgsffhd9B79f31GXZLPfnrlXJVavETgNPzrsG0=
+fyne.io/fyne/v2 v2.7.5-0.20260607210123-dd17c19a0a3d h1:w4hyV9QN0LaqEfS8/Pa7DnYKShcmMiSJ3S/kvzSOk0M=
+fyne.io/fyne/v2 v2.7.5-0.20260607210123-dd17c19a0a3d/go.mod h1:MEWwWTgsffhd9B79f31GXZLPfnrlXJVavETgNPzrsG0=
+fyne.io/systray v1.12.1 h1:ygBD6aZXwiOmZoY5N+ukbH9pih0Kq6fYgVeMYbr5skQ=
+fyne.io/systray v1.12.1/go.mod h1:RVwqP9nYMo7h5zViCBHri2FgjXF7H2cub7MAq4NSoLs=
 github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03qcyfWMU=
 github.com/BurntSushi/toml v1.5.0 h1:W5quZX/G/csjUnuI8SUYlsHs9M38FC7znL0lIO+DvMg=
 github.com/BurntSushi/toml v1.5.0/go.mod h1:ukJfTF/6rtPPRCnwkur4qwRxa8vTRFBF0uk2lLoLwho=

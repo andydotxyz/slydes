@@ -53,19 +53,7 @@ func nextSlide() {
 		return
 	}
 
-	p.id++
-	p.slide.setSource(p.items[p.id], p.id)
-	p.updateProgress()
-
-	if p.preview != nil {
-		p.preview.setSource(p.items[p.id], p.id)
-		if p.id < len(p.items)-1 {
-			p.next.setSource(p.items[p.id+1], p.id+1)
-		} else {
-			p.next.setSource("", p.id+1)
-		}
-		p.updateNotes()
-	}
+	changeSlide(p, p.id+1)
 }
 
 func prevSlide() {
@@ -78,19 +66,7 @@ func prevSlide() {
 		return
 	}
 
-	p.id--
-	p.slide.setSource(p.items[p.id], p.id)
-	p.updateProgress()
-
-	if p.preview != nil {
-		p.preview.setSource(p.items[p.id], p.id)
-		if p.id < len(p.items)-1 {
-			p.next.setSource(p.items[p.id+1], p.id+1)
-		} else {
-			p.next.setSource("", p.id+1)
-		}
-		p.updateNotes()
-	}
+	changeSlide(p, p.id-1)
 }
 
 func exitPresent() {
@@ -106,9 +82,18 @@ func exitPresent() {
 }
 
 func togglePresent() {
+	if currentPresenting == nil {
+		return
+	}
+
 	preview := currentPresenting.control.Content()
 	view := currentPresenting.live.Content()
 
+	currentPresenting.flipped = !currentPresenting.flipped
 	currentPresenting.control.SetContent(view)
 	currentPresenting.live.SetContent(preview)
+
+	currentPresenting.updateProgress()
+	// in case of aspect ratio change
+	go precaptureSlides(currentPresenting)
 }
