@@ -31,6 +31,147 @@ func TestParseNestedBullets(t *testing.T) {
 	}
 }
 
+func TestParseBulletStyledSegments(t *testing.T) {
+	s := newSlides()
+	c := s.parseMarkdown("* foo `bar` **baz** *qux*\n")
+
+	if len(c.content) != 1 {
+		t.Fatalf("expected 1 bullet, got %d", len(c.content))
+	}
+	b, ok := c.content[0].(*bullet)
+	if !ok {
+		t.Fatalf("expected *bullet, got %T", c.content[0])
+	}
+	if b.content != "foo bar baz qux" {
+		t.Errorf("expected joined content %q, got %q", "foo bar baz qux", b.content)
+	}
+
+	want := []textSegment{
+		{text: "foo "},
+		{text: "bar", code: true},
+		{text: " "},
+		{text: "baz", bold: true},
+		{text: " "},
+		{text: "qux", italic: true},
+	}
+	if len(b.segments) != len(want) {
+		t.Fatalf("expected %d segments, got %d: %#v", len(want), len(b.segments), b.segments)
+	}
+	for i, w := range want {
+		if b.segments[i] != w {
+			t.Errorf("segment %d: expected %#v, got %#v", i, w, b.segments[i])
+		}
+	}
+}
+
+func TestParseHeadingStyledSegments(t *testing.T) {
+	s := newSlides()
+	c := s.parseMarkdown("# Using `context` **today**\n")
+
+	// Inline code in a heading must stay in the heading, not leak into the body.
+	if len(c.content) != 0 {
+		t.Fatalf("expected no body content, got %d objects", len(c.content))
+	}
+	want := []textSegment{
+		{text: "Using "},
+		{text: "context", code: true},
+		{text: " "},
+		{text: "today", bold: true},
+	}
+	if len(c.heading) != len(want) {
+		t.Fatalf("expected %d heading segments, got %d: %#v", len(want), len(c.heading), c.heading)
+	}
+	for i, w := range want {
+		if c.heading[i] != w {
+			t.Errorf("segment %d: expected %#v, got %#v", i, w, c.heading[i])
+		}
+	}
+}
+
+func TestParseBodyStyledSegments(t *testing.T) {
+	s := newSlides()
+	c := s.parseMarkdown("Here is `code` and **bold** text.\n")
+
+	if len(c.content) != 1 {
+		t.Fatalf("expected 1 body line, got %d objects", len(c.content))
+	}
+	line, ok := c.content[0].(*richLine)
+	if !ok {
+		t.Fatalf("expected body to be *richLine, got %T", c.content[0])
+	}
+	want := []textSegment{
+		{text: "Here is "},
+		{text: "code", code: true},
+		{text: " and "},
+		{text: "bold", bold: true},
+		{text: " text."},
+	}
+	if len(line.segments) != len(want) {
+		t.Fatalf("expected %d segments, got %d: %#v", len(want), len(line.segments), line.segments)
+	}
+	for i, w := range want {
+		if line.segments[i] != w {
+			t.Errorf("segment %d: expected %#v, got %#v", i, w, line.segments[i])
+		}
+	}
+}
+
+func TestParseStrikethroughSegments(t *testing.T) {
+	s := newSlides()
+
+	// Bullet, heading and body paragraph should all carry the strike flag.
+	bc := s.parseMarkdown("* keep ~~drop~~\n")
+	b, ok := bc.content[0].(*bullet)
+	if !ok {
+		t.Fatalf("expected *bullet, got %T", bc.content[0])
+	}
+	wantBullet := []textSegment{
+		{text: "keep "},
+		{text: "drop", strike: true},
+	}
+	if len(b.segments) != len(wantBullet) {
+		t.Fatalf("bullet: expected %d segments, got %d: %#v", len(wantBullet), len(b.segments), b.segments)
+	}
+	for i, w := range wantBullet {
+		if b.segments[i] != w {
+			t.Errorf("bullet segment %d: expected %#v, got %#v", i, w, b.segments[i])
+		}
+	}
+
+	hc := s.parseMarkdown("# Title ~~old~~\n")
+	wantHeading := []textSegment{
+		{text: "Title "},
+		{text: "old", strike: true},
+	}
+	if len(hc.heading) != len(wantHeading) {
+		t.Fatalf("heading: expected %d segments, got %d: %#v", len(wantHeading), len(hc.heading), hc.heading)
+	}
+	for i, w := range wantHeading {
+		if hc.heading[i] != w {
+			t.Errorf("heading segment %d: expected %#v, got %#v", i, w, hc.heading[i])
+		}
+	}
+
+	pc := s.parseMarkdown("Some ~~removed~~ text.\n")
+	line, ok := pc.content[0].(*richLine)
+	if !ok {
+		t.Fatalf("expected body *richLine, got %T", pc.content[0])
+	}
+	wantBody := []textSegment{
+		{text: "Some "},
+		{text: "removed", strike: true},
+		{text: " text."},
+	}
+	if len(line.segments) != len(wantBody) {
+		t.Fatalf("body: expected %d segments, got %d: %#v", len(wantBody), len(line.segments), line.segments)
+	}
+	for i, w := range wantBody {
+		if line.segments[i] != w {
+			t.Errorf("body segment %d: expected %#v, got %#v", i, w, line.segments[i])
+		}
+	}
+}
+
 func TestParseHTMLCommentsAsNotes(t *testing.T) {
 	s := newSlides()
 

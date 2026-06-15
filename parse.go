@@ -13,16 +13,16 @@ import (
 	"github.com/watzon/goshot/pkg/render"
 	"github.com/yuin/goldmark"
 	"github.com/yuin/goldmark/ast"
+	"github.com/yuin/goldmark/extension"
 	"github.com/yuin/goldmark/renderer"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/canvas"
-	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/storage"
 )
 
 type content struct {
-	heading, subheading string
+	heading, subheading []textSegment
 	bgpath              string
 	notes               string
 
@@ -36,7 +36,7 @@ func (s *slides) parseMarkdown(data string) content {
 	}
 
 	r := &parser{c: &c, parent: s}
-	md := goldmark.New(goldmark.WithRenderer(r))
+	md := goldmark.New(goldmark.WithRenderer(r), goldmark.WithExtensions(extension.Strikethrough))
 	err := md.Convert([]byte(data), nil)
 	if err != nil {
 		fyne.LogError("Failed to parse markdown", err)
@@ -46,46 +46,85 @@ func (s *slides) parseMarkdown(data string) content {
 
 type parser struct {
 	blockquote, heading, list, code bool
+	bold, italic, strike            bool
 	listDepth                       int
 	parent                          *slides
 
-	c *content
+	segments []textSegment // styled runs accumulated for the current bullet
+	c        *content
 }
 
 func (p *parser) AddOptions(...renderer.Option) {}
 
 func (p *parser) Render(_ io.Writer, source []byte, n ast.Node) error {
 	tmpText := ""
+	// flush moves the pending text run into a styled segment. Inline text always
+	// lives inside a block (paragraph, heading or list item) that emits its
+	// accumulated segments at its closing node, so flushing is unconditional.
+	flush := func() {
+		if tmpText == "" {
+			return
+		}
+		p.segments = append(p.segments, textSegment{text: tmpText, bold: p.bold, italic: p.italic, strike: p.strike})
+		tmpText = ""
+	}
+	// emitBullet builds a bullet from the accumulated segments, if any.
+	emitBullet := func() {
+		flush()
+		if len(p.segments) > 0 {
+			p.c.content = append(p.c.content, newBullet(p.segments, p.listDepth-1, p.parent.theme))
+			p.segments = nil
+		}
+	}
 	err := ast.Walk(n, func(n ast.Node, entering bool) (ast.WalkStatus, error) {
 		if !entering {
 			switch n.Kind().String() {
 			case "Heading":
+				flush()
 				switch n.(*ast.Heading).Level {
 				case 1:
-					p.c.heading = tmpText
+					p.c.heading = p.segments
 				case 2:
-					if p.c.subheading == "" {
-						p.c.subheading = tmpText
+					if len(p.c.subheading) == 0 {
+						p.c.subheading = p.segments
 					} else {
-						t := canvas.NewText(tmpText+"\r", color.Black)
+						t := canvas.NewText(segmentsText(p.segments)+"\r", color.Black)
 						t.TextStyle.Bold = true
 						p.c.content = append(p.c.content, t)
 					}
 				default:
-					t := canvas.NewText(tmpText+"\r", color.Black)
+					t := canvas.NewText(segmentsText(p.segments)+"\r", color.Black)
 					t.TextStyle.Bold = true
 					p.c.content = append(p.c.content, t)
 				}
+				p.segments = nil
+				p.heading = false
 			case "Paragraph":
 				// if p.blockquote // TODO
-				if !p.list && tmpText != "" {
-					p.c.content = append(p.c.content, canvas.NewText(tmpText+"\r", color.Black))
+				// In a list the segments belong to the bullet, emitted at ListItem.
+				if !p.list {
+					flush()
+					if len(p.segments) > 0 {
+						// color.Black is a placeholder; addContent recolours body
+						// lines to the theme foreground.
+						p.c.content = append(p.c.content, newRichLine(p.segments, color.Black, false))
+						p.segments = nil
+					}
 				}
 			case "ListItem":
-				if tmpText != "" {
-					p.c.content = append(p.c.content, newBullet(tmpText, p.listDepth-1, p.parent.theme))
-					tmpText = ""
+				emitBullet()
+			case "Emphasis":
+				flush() // close the styled run before clearing the style
+				if em, ok := n.(*ast.Emphasis); ok {
+					if em.Level >= 2 {
+						p.bold = false
+					} else {
+						p.italic = false
+					}
 				}
+			case "Strikethrough":
+				flush() // close the styled run before clearing the style
+				p.strike = false
 			case "CodeSpan":
 				p.code = false
 			}
@@ -94,14 +133,25 @@ func (p *parser) Render(_ io.Writer, source []byte, n ast.Node) error {
 
 		switch n.Kind().String() {
 		case "List":
-			if p.list && tmpText != "" {
-				p.c.content = append(p.c.content, newBullet(tmpText, p.listDepth-1, p.parent.theme))
-				tmpText = ""
+			if p.list { // a nested list: flush the parent item's text first
+				emitBullet()
 			}
 			p.list = true
 			p.listDepth++
 		case "ListItem":
 			tmpText = ""
+		case "Emphasis":
+			flush() // start a new styled run
+			if em, ok := n.(*ast.Emphasis); ok {
+				if em.Level >= 2 {
+					p.bold = true
+				} else {
+					p.italic = true
+				}
+			}
+		case "Strikethrough":
+			flush() // start a new styled run
+			p.strike = true
 		case "Heading":
 			p.heading = true
 			tmpText = ""
@@ -120,7 +170,7 @@ func (p *parser) Render(_ io.Writer, source []byte, n ast.Node) error {
 		case "Image":
 			name := string(n.(*ast.Image).Destination)
 			path := filepath.Join(p.root(), name)
-			if p.c.heading == "" {
+			if len(p.c.heading) == 0 {
 				p.c.bgpath = path
 			} else {
 				img := canvas.NewImageFromFile(path)
@@ -128,23 +178,11 @@ func (p *parser) Render(_ io.Writer, source []byte, n ast.Node) error {
 				p.c.content = append(p.c.content, img)
 			}
 		case "CodeSpan":
+			// Inline code becomes a styled segment of its line (bullet, heading or
+			// body paragraph) so it renders in place.
 			p.code = true
-
-			// Inside a list the bullet renders as a single line of text, so keep
-			// inline code as part of that text rather than emitting a separate
-			// styled box (which would render before the bullet).
-			if p.list {
-				tmpText += string(n.Text(source))
-				break
-			}
-
-			if tmpText != "" {
-				p.c.content = append(p.c.content, canvas.NewText(tmpText, color.Black))
-			}
-			inline := canvas.NewText(string(n.Text(source)), color.Black)
-			bg := canvas.NewRectangle(color.Gray{Y: 0xcc})
-			p.c.content = append(p.c.content, container.NewStack(bg, inline))
-			tmpText = ""
+			flush()
+			p.segments = append(p.segments, textSegment{text: string(n.Text(source)), code: true})
 		case "HTMLBlock":
 			lines := n.Lines()
 			var sb strings.Builder

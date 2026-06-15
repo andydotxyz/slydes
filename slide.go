@@ -28,7 +28,7 @@ type slide struct {
 	content             *fyne.Container
 	footer              *fyne.Container
 	bg                  fyne.CanvasObject
-	heading, subheading *canvas.Text
+	heading, subheading *richLine
 	notes               string
 
 	footerLeft, footerCenter, footerRight *canvas.Text
@@ -111,16 +111,13 @@ func (s *slide) addContent(items *[]fyne.CanvasObject, in content) {
 		return
 	}
 
-	if in.heading != "" {
-		s.heading = canvas.NewText(in.heading, s.parent.theme.Color(colorNameHeader, theme.VariantLight))
-		s.heading.TextStyle.Bold = true
+	if len(in.heading) > 0 {
+		s.heading = newRichLine(in.heading, s.parent.theme.Color(colorNameHeader, theme.VariantLight), true)
 		s.variant = headingSlide
 		*items = append(*items, s.heading)
 	}
-	if in.subheading != "" {
-		s.subheading = canvas.NewText(in.subheading, s.parent.theme.Color(colorNameSubHeader, theme.VariantLight))
-		s.subheading.TextStyle.Bold = true
-
+	if len(in.subheading) > 0 {
+		s.subheading = newRichLine(in.subheading, s.parent.theme.Color(colorNameSubHeader, theme.VariantLight), true)
 		s.variant = headingSlide
 		*items = append(*items, s.subheading)
 	}
@@ -130,12 +127,17 @@ func (s *slide) addContent(items *[]fyne.CanvasObject, in content) {
 		*items = append(*items, in.content...)
 	}
 
+	// Recolour body text to the theme foreground. Body paragraphs are richLine
+	// widgets; the heading/subheading richLines keep their own colours.
+	fg := s.parent.theme.Color(theme.ColorNameForeground, theme.VariantLight)
 	for _, o := range *items {
-		if t, ok := o.(*canvas.Text); ok {
-			if t == s.heading || t == s.subheading {
-				continue
+		switch t := o.(type) {
+		case *canvas.Text:
+			t.Color = fg
+		case *richLine:
+			if t != s.heading && t != s.subheading {
+				t.setColor(fg)
 			}
-			t.Color = s.parent.theme.Color(theme.ColorNameForeground, theme.VariantLight)
 		}
 	}
 }
