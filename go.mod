@@ -3,7 +3,7 @@ module slydes
 go 1.22.0
 
 require (
-	fyne.io/fyne/v2 v2.7.5-0.20260607210123-dd17c19a0a3d
+	fyne.io/fyne/v2 v2.7.5-0.20260610130726-8dacc1eaa26e
 	github.com/BurntSushi/toml v1.5.0
 	github.com/alecthomas/chroma/v2 v2.14.0
 	github.com/go-pdf/fpdf v0.8.0
@@ -12,7 +12,7 @@ require (
 )
 
 require (
-	fyne.io/systray v1.12.1 // indirect
+	fyne.io/systray v1.12.2 // indirect
 	github.com/FyshOS/fancyfs v0.0.0-20251025194026-1f03098ff624 // indirect
 	github.com/anthonynsimon/bild v0.13.0 // indirect
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect

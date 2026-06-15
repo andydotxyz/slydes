@@ -2,12 +2,14 @@ package main
 
 import (
 	"flag"
+	"image/color"
 	"io"
 	"os"
 	"path/filepath"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
+	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/dialog"
 	"fyne.io/fyne/v2/storage"
 )
@@ -88,6 +90,8 @@ func togglePresent() {
 
 	preview := currentPresenting.control.Content()
 	view := currentPresenting.live.Content()
+	currentPresenting.control.SetContent(canvas.NewRectangle(color.Transparent))
+	currentPresenting.live.SetContent(canvas.NewRectangle(color.Transparent))
 
 	currentPresenting.flipped = !currentPresenting.flipped
 	currentPresenting.control.SetContent(view)
@@ -96,4 +100,6 @@ func togglePresent() {
 	currentPresenting.updateProgress()
 	// in case of aspect ratio change
 	go precaptureSlides(currentPresenting)
+	view.Refresh()
+	preview.Refresh()
 }
