@@ -4,6 +4,7 @@ import (
 	_ "embed"
 	"image"
 	"image/color"
+	"sync"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/canvas"
@@ -35,9 +36,11 @@ type presenting struct {
 	progressFraction          float32
 	notesLabel                *widget.Label
 
-	captures  []image.Image // one rendered bitmap per slide, for transition textures
-	ready     bool          // true once every slide has been pre-captured
-	animating bool          // true while a transition shader is on screen
+	captures        []image.Image // one rendered bitmap per slide, for transition textures
+	captureSize     fyne.Size     // resolution captures are rendered at
+	capturePixScale float32       // pixel scale (size × pixScale = framebuffer pixels)
+	captureMu       sync.Mutex    // serialises capture goroutines
+	animating       bool          // true while a transition shader is on screen
 }
 
 // updateNotes copies the current preview slide's notes into the presenter UI.
@@ -84,7 +87,8 @@ func (g *gui) showPresentWindow() {
 	w2.SetPadded(false)
 
 	body := newAspectContainer(content)
-	p := &presenting{live: w2, slide: content, deck: g.s, body: body, id: id, items: items}
+	p := &presenting{live: w2, slide: content, deck: g.s, body: body, id: id, items: items,
+		captures: make([]image.Image, len(items))}
 	p.progressBox = canvas.NewRectangle(color.Black)
 	p.progressBox.SetMinSize(fyne.NewSquareSize(progressHeight))
 	p.progressFill = canvas.NewRectangle(p.slide.footerColor())

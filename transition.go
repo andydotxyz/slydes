@@ -8,42 +8,88 @@ import (
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/container"
+	"fyne.io/fyne/v2/driver/software"
 )
 
 // transitionDuration is how long the galaxy shuffle takes end to end.
 const transitionDuration = 1300 * time.Millisecond
 
-// precaptureSlides renders every slide onto the live canvas in turn and grabs a
-// bitmap of each with Canvas().Capture(), caching them so a transition can hand
-// the outgoing and incoming slides to the shader as textures. It runs in its own
-// goroutine (Capture reads the painted front buffer, so each slide needs a paint
-// before we grab it) and marks the presentation ready once every slide is held.
+// precaptureSlides determines the capture resolution from the live window and
+// renders the slides adjacent to the starting position using ensureNeighborsCaptured.
 func precaptureSlides(p *presenting) {
 	win := p.live
 	if currentPresenting != nil && currentPresenting.flipped {
 		win = p.control
 	}
 
-	p.progressBox.Hide()
-	caps := make([]image.Image, len(p.items))
-	for i := range p.items {
-		idx := i
+	// Wait for the window to settle into its final (fullscreen) size before capturing.
+	var size fyne.Size
+	var pixScale float32
+	for i := 0; i < 20; i++ {
+		var s fyne.Size
+		var px float32
 		fyne.DoAndWait(func() {
-			p.slide.setSource(p.items[idx], idx)
+			s = win.Canvas().Size()
+			if s.Width > 0 {
+				pw, _ := win.Canvas().PixelCoordinateForPosition(fyne.NewPos(s.Width, 0))
+				px = float32(pw) / s.Width
+			}
 		})
-		// Allow a few frames for the slide to reach the front buffer.
-		time.Sleep(60 * time.Millisecond)
-		fyne.DoAndWait(func() {
-			caps[idx] = win.Canvas().Capture()
-		})
+		if s.Width > 0 && s == size && px == pixScale {
+			break
+		}
+		size = s
+		pixScale = px
+		time.Sleep(50 * time.Millisecond)
 	}
-	fyne.DoAndWait(func() {
-		p.slide.setSource(p.items[p.id], p.id)
-	})
+	if size.Width <= 0 || size.Height <= 0 {
+		return
+	}
+	if pixScale <= 0 {
+		pixScale = 1
+	}
 
-	p.captures = caps
-	p.progressBox.Show()
-	p.ready = true
+	p.captureSize = size
+	p.capturePixScale = pixScale
+	ensureNeighborsCaptured(p)
+}
+
+// ensureNeighborsCaptured renders any of the current slide and its immediate
+// neighbours that have not been captured yet. It is safe to call from any
+// goroutine.
+func ensureNeighborsCaptured(p *presenting) {
+	p.captureMu.Lock()
+	defer p.captureMu.Unlock()
+
+	if p.captureSize.Width <= 0 {
+		return // precaptureSlides has not finished establishing the size yet
+	}
+
+	id := p.id
+	for _, idx := range [3]int{id, id + 1, id - 1} {
+		if idx < 0 || idx >= len(p.items) || p.captures[idx] != nil {
+			continue
+		}
+		captureSlide(p, idx, p.captureSize, p.capturePixScale)
+	}
+}
+
+// captureSlide renders a single slide off-screen and stores the bitmap in
+// p.captures[idx].
+func captureSlide(p *presenting, idx int, size fyne.Size, pixScale float32) {
+	data := p.items[idx]
+	fyne.DoAndWait(func() {
+		sl := newSlide(data, idx, p.deck)
+		content := container.NewStack(
+			canvas.NewRectangle(color.Black),
+			newAspectContainer(sl))
+		c := software.NewCanvas()
+		c.SetPadded(false)
+		c.SetScale(pixScale)
+		c.SetContent(content)
+		c.Resize(size)
+		p.captures[idx] = c.Capture()
+	})
 }
 
 // changeSlide moves the presentation to slide `to`, animating the move with the
@@ -60,7 +106,11 @@ func changeSlide(p *presenting, to int) {
 	updatePreviews(p)
 	p.updateProgress()
 
-	if p.ready && p.body != nil && from >= 0 && from < len(p.captures) &&
+	// Render the new neighbour off-screen so the next transition has its texture
+	// ready. Runs in a goroutine so it does not block the current navigation.
+	go ensureNeighborsCaptured(p)
+
+	if p.body != nil && from >= 0 && from < len(p.captures) &&
 		to >= 0 && to < len(p.captures) && p.captures[from] != nil && p.captures[to] != nil {
 		startSlideTransition(p, from, to)
 		return
