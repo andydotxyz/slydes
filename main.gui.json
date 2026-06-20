@@ -148,7 +148,7 @@
                     "Type": "*canvas.Image",
                     "Struct": {
                       "Hidden": false,
-                      "File": "/home/andy/Code/Andy/slydes/img/slide.png",
+                      "File": "img/slide.png",
                       "Resource": null,
                       "Image": null,
                       "Translucency": 0,

@@ -82,7 +82,8 @@ func captureSlide(p *presenting, idx int, size fyne.Size, pixScale float32) {
 		sl := newSlide(data, idx, p.deck)
 		content := container.NewStack(
 			canvas.NewRectangle(color.Black),
-			newAspectContainer(sl))
+			newAspectContainer(sl),
+		)
 		c := software.NewCanvas()
 		c.SetPadded(false)
 		c.SetScale(pixScale)
@@ -149,7 +150,8 @@ func startSlideTransition(p *presenting, from, to int) {
 			p.body,
 			shader,
 			container.NewBorder(nil, container.NewStack(p.progressBox,
-				container.NewWithoutLayout(p.progressFill)), nil, nil)))
+				container.NewWithoutLayout(p.progressFill)), nil, nil)),
+	)
 
 	seconds := float32(transitionDuration.Seconds())
 	finished := false
@@ -185,7 +187,8 @@ func finishSlideTransition(p *presenting) {
 		container.NewStack(canvas.NewRectangle(color.Black),
 			p.body,
 			container.NewBorder(nil, container.NewStack(p.progressBox,
-				container.NewWithoutLayout(p.progressFill)), nil, nil)))
+				container.NewWithoutLayout(p.progressFill)), nil, nil)),
+	)
 
 	p.animating = false
 }

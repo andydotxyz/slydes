@@ -155,7 +155,8 @@ func (g *gui) makeUI() fyne.CanvasObject {
 
 	previewScroll = container.NewHScroll(container.NewStack(
 		canvas.NewRectangle(theme.MenuBackgroundColor()),
-		container.NewHBox(previews)))
+		container.NewHBox(previews),
+	))
 
 	return container.NewBorder(
 		container.NewVBox(
@@ -182,11 +183,13 @@ func (g *gui) makeUI() fyne.CanvasObject {
 				widget.NewToolbarSpacer(),
 				widget.NewToolbarAction(theme.HelpIcon(), func() {}),
 			),
-			previewScroll),
+			previewScroll,
+		),
 		nil,
 		nil,
 		nil,
-		split)
+		split,
+	)
 }
 
 func (g *gui) moveToSlide(id int) {

@@ -87,8 +87,10 @@ func (g *gui) showPresentWindow() {
 	w2.SetPadded(false)
 
 	body := newAspectContainer(content)
-	p := &presenting{live: w2, slide: content, deck: g.s, body: body, id: id, items: items,
-		captures: make([]image.Image, len(items))}
+	p := &presenting{
+		live: w2, slide: content, deck: g.s, body: body, id: id, items: items,
+		captures: make([]image.Image, len(items)),
+	}
 	p.progressBox = canvas.NewRectangle(color.Black)
 	p.progressBox.SetMinSize(fyne.NewSquareSize(progressHeight))
 	p.progressFill = canvas.NewRectangle(p.slide.footerColor())
@@ -97,7 +99,8 @@ func (g *gui) showPresentWindow() {
 		container.NewStack(canvas.NewRectangle(color.Black),
 			body,
 			container.NewBorder(nil, container.NewStack(p.progressBox,
-				container.NewWithoutLayout(p.progressFill)), nil, nil)))
+				container.NewWithoutLayout(p.progressFill)), nil, nil)),
+	)
 
 	addPresentationKeys(w2)
 
@@ -127,7 +130,8 @@ func (g *gui) showPresentWindow() {
 		pres.controls.Items[0].(*widget.ToolbarAction).OnActivated = prevSlide
 		pres.controls.Items[1].(*widget.ToolbarAction).OnActivated = nextSlide
 		pres.controls.Items[3].(*widget.ToolbarAction).Icon = theme.NewThemedResource(
-			fyne.NewStaticResource("swap.svg", resourceSwapSvg))
+			fyne.NewStaticResource("swap.svg", resourceSwapSvg),
+		)
 		pres.controls.Items[3].(*widget.ToolbarAction).OnActivated = togglePresent
 		pres.controls.Items[4].(*widget.ToolbarAction).OnActivated = exitPresent
 		pres.controls.Refresh()

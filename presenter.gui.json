@@ -51,7 +51,7 @@
                         "Type": "*canvas.Image",
                         "Struct": {
                           "Hidden": false,
-                          "File": "/Users/andy/Code/Andy/slydes/img/slide.png",
+                          "File": "img/slide.png",
                           "Resource": null,
                           "Image": null,
                           "Translucency": 0,
@@ -152,7 +152,7 @@
                                 "Type": "*canvas.Image",
                                 "Struct": {
                                   "Hidden": false,
-                                  "File": "/Users/andy/Code/Andy/slydes/img/slide.png",
+                                  "File": "img/slide.png",
                                   "Resource": null,
                                   "Image": null,
                                   "Translucency": 0,
