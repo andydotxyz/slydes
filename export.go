@@ -68,74 +68,11 @@ func renderObjectsToPDF(doc *fpdf.Fpdf, o fyne.CanvasObject, off fyne.Position) 
 			}
 		}
 	case *canvas.Rectangle:
-		x, y := c.Position().Add(off).Components()
-		w, h := c.Size().Components()
-		style := ""
-		if c.FillColor != nil && c.FillColor != color.Transparent {
-			style += "F"
-			r, g, b, _ := c.FillColor.RGBA()
-			doc.SetFillColor(int(r>>8), int(g>>8), int(b>>8))
-		}
-		if c.StrokeWidth > 0 && c.StrokeColor != nil && c.StrokeColor != color.Transparent {
-			style += "D"
-			r, g, b, _ := c.StrokeColor.RGBA()
-			doc.SetDrawColor(int(r), int(g), int(b))
-			doc.SetLineWidth(float64(c.StrokeWidth))
-		}
-		doc.Rect(float64(x), float64(y), float64(w), float64(h), style)
+		renderRectangleToPDF(doc, c, off)
 	case *canvas.Text:
-		r, g, b, _ := c.Color.RGBA()
-		doc.SetTextColor(int(r>>8), int(g>>8), int(b>>8))
-
-		x, y := c.Position().Add(off).Components()
-		size, base := fyne.CurrentApp().Driver().RenderedTextSize(c.Text, c.TextSize, c.TextStyle, c.FontSource)
-		style := ""
-		if c.TextStyle.Bold {
-			style += "B"
-		}
-		if c.TextStyle.Italic {
-			style += "I"
-		}
-
-		if c.TextStyle.Monospace {
-			doc.SetFont("Courier", style, float64(c.TextSize))
-		} else {
-			doc.SetFont("Helvetica", style, float64(c.TextSize))
-		}
-
-		w := c.Size().Width
-		switch c.Alignment {
-		case fyne.TextAlignCenter:
-			x += (w - size.Width) / 2
-		case fyne.TextAlignTrailing:
-			x += w - size.Width
-		}
-		topPad := (c.Size().Height - size.Height) / 2
-		if topPad < 0 { // if size was accidentally too small!
-			topPad = 0
-		}
-
-		doc.Text(float64(x), float64(y+base+topPad), c.Text)
+		renderTextToPDF(doc, c, off)
 	case *canvas.Circle:
-		x, y := c.Position().Add(off).Components()
-		w, h := c.Size().Components()
-		style := ""
-		if c.FillColor != nil && c.FillColor != color.Transparent {
-			style += "F"
-			r, g, b, _ := c.FillColor.RGBA()
-			doc.SetFillColor(int(r>>8), int(g>>8), int(b>>8))
-		}
-		if c.StrokeWidth > 0 && c.StrokeColor != nil && c.StrokeColor != color.Transparent {
-			style += "D"
-			r, g, b, _ := c.StrokeColor.RGBA()
-			doc.SetDrawColor(int(r), int(g), int(b))
-			doc.SetLineWidth(float64(c.StrokeWidth))
-		}
-		r := w / 2
-		if h < w {
-			r = h / 2
-		}
-		doc.Circle(float64(x+r), float64(y+r), float64(r), style)
+		renderCircleToPDF(doc, c, off)
 	case *canvas.Image:
 		ext := ""
 		if c.File != "" {
@@ -194,4 +131,79 @@ func renderObjectsToPDF(doc *fpdf.Fpdf, o fyne.CanvasObject, off fyne.Position) 
 	}
 
 	return nil
+}
+
+func renderCircleToPDF(doc *fpdf.Fpdf, c *canvas.Circle, off fyne.Position) {
+	x, y := c.Position().Add(off).Components()
+	w, h := c.Size().Components()
+	style := ""
+	if c.FillColor != nil && c.FillColor != color.Transparent {
+		style += "F"
+		r, g, b, _ := c.FillColor.RGBA()
+		doc.SetFillColor(int(r>>8), int(g>>8), int(b>>8))
+	}
+	if c.StrokeWidth > 0 && c.StrokeColor != nil && c.StrokeColor != color.Transparent {
+		style += "D"
+		r, g, b, _ := c.StrokeColor.RGBA()
+		doc.SetDrawColor(int(r), int(g), int(b))
+		doc.SetLineWidth(float64(c.StrokeWidth))
+	}
+	r := w / 2
+	if h < w {
+		r = h / 2
+	}
+	doc.Circle(float64(x+r), float64(y+r), float64(r), style)
+}
+
+func renderRectangleToPDF(doc *fpdf.Fpdf, c *canvas.Rectangle, off fyne.Position) {
+	x, y := c.Position().Add(off).Components()
+	w, h := c.Size().Components()
+	style := ""
+	if c.FillColor != nil && c.FillColor != color.Transparent {
+		style += "F"
+		r, g, b, _ := c.FillColor.RGBA()
+		doc.SetFillColor(int(r>>8), int(g>>8), int(b>>8))
+	}
+	if c.StrokeWidth > 0 && c.StrokeColor != nil && c.StrokeColor != color.Transparent {
+		style += "D"
+		r, g, b, _ := c.StrokeColor.RGBA()
+		doc.SetDrawColor(int(r), int(g), int(b))
+		doc.SetLineWidth(float64(c.StrokeWidth))
+	}
+	doc.Rect(float64(x), float64(y), float64(w), float64(h), style)
+}
+
+func renderTextToPDF(doc *fpdf.Fpdf, c *canvas.Text, off fyne.Position) {
+	r, g, b, _ := c.Color.RGBA()
+	doc.SetTextColor(int(r>>8), int(g>>8), int(b>>8))
+
+	x, y := c.Position().Add(off).Components()
+	size, base := fyne.CurrentApp().Driver().RenderedTextSize(c.Text, c.TextSize, c.TextStyle, c.FontSource)
+	style := ""
+	if c.TextStyle.Bold {
+		style += "B"
+	}
+	if c.TextStyle.Italic {
+		style += "I"
+	}
+
+	if c.TextStyle.Monospace {
+		doc.SetFont("Courier", style, float64(c.TextSize))
+	} else {
+		doc.SetFont("Helvetica", style, float64(c.TextSize))
+	}
+
+	w := c.Size().Width
+	switch c.Alignment {
+	case fyne.TextAlignCenter:
+		x += (w - size.Width) / 2
+	case fyne.TextAlignTrailing:
+		x += w - size.Width
+	}
+	topPad := (c.Size().Height - size.Height) / 2
+	if topPad < 0 { // if size was accidentally too small!
+		topPad = 0
+	}
+
+	doc.Text(float64(x), float64(y+base+topPad), c.Text)
 }
