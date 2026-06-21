@@ -19,7 +19,8 @@ type slideButton struct {
 
 func (s *slideButton) CreateRenderer() fyne.WidgetRenderer {
 	num := fmt.Sprintf(" %d", s.id+1)
-	return widget.NewSimpleRenderer(container.NewStack(s.content, container.NewVBox(canvas.NewText(num, theme.BackgroundColor()))))
+	bgCol := theme.Color(theme.ColorNameBackground)
+	return widget.NewSimpleRenderer(container.NewStack(s.content, container.NewVBox(canvas.NewText(num, bgCol))))
 }
 
 func (s *slideButton) Tapped(_ *fyne.PointEvent) {

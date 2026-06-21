@@ -30,7 +30,7 @@ func newGUI(s *slides, w fyne.Window) *gui {
 func (g *gui) makeUI() fyne.CanvasObject {
 	g.content = widget.NewMultiLineEntry()
 	border := canvas.NewRectangle(color.Transparent)
-	border.StrokeColor = theme.PrimaryColor()
+	border.StrokeColor = theme.Color(theme.ColorNamePrimary)
 	border.StrokeWidth = 2
 	border.CornerRadius = theme.InputRadiusSize()
 
@@ -154,7 +154,7 @@ func (g *gui) makeUI() fyne.CanvasObject {
 	}()
 
 	previewScroll = container.NewHScroll(container.NewStack(
-		canvas.NewRectangle(theme.MenuBackgroundColor()),
+		canvas.NewRectangle(theme.Color(theme.ColorNameMenuBackground)),
 		container.NewHBox(previews),
 	))
 

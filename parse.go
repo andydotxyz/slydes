@@ -103,7 +103,7 @@ func (p *parser) Render(_ io.Writer, source []byte, n ast.Node) error {
 			tmpText = ""
 		case "Text":
 			if !p.code {
-				ret := addTextToSegment(string(n.Text(source)), &tmpText, n)
+				ret := addTextToSegment(string(n.(*ast.Text).Value(source)), &tmpText, n)
 				if ret != 0 {
 					return ret, nil
 				}
@@ -117,7 +117,7 @@ func (p *parser) Render(_ io.Writer, source []byte, n ast.Node) error {
 			// body paragraph) so it renders in place.
 			p.code = true
 			flush()
-			p.segments = append(p.segments, textSegment{text: string(n.Text(source)), code: true})
+			p.segments = append(p.segments, textSegment{text: string(n.(*ast.CodeSpan).FirstChild().(*ast.Text).Value(source)), code: true})
 		case "HTMLBlock":
 			lines := n.Lines()
 			var sb strings.Builder
