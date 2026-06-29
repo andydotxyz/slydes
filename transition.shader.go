@@ -8,8 +8,8 @@ package main
 // Following the canvas.Shader contract, each shader is handed the standard
 // uniforms:
 //
-//	uniform vec2  frame_size;   // output frame size in pixels
-//	uniform vec4  rect_coords;  // this object's bounds (x1, x2, y1, y2) in pixels
+//	uniform vec2  frame;   // output frame size in pixels
+//	uniform vec4  bounds;  // this object's bounds (x1, y1, x2, y2) in pixels
 //
 // plus the parameters we drive from Go as "uniform float":
 //
@@ -23,14 +23,14 @@ package main
 //	uniform sampler2D next;     // the slide we are arriving at
 //
 // The vertex stage is Fyne's shared rectangle quad, so there is no texture
-// varying: we derive every coordinate from gl_FragCoord and frame_size, exactly
+// varying: we derive every coordinate from gl_FragCoord and frame, exactly
 // as the built in shapes do.
 
 // shuffleShaderBody is the GLSL shared between the two targets. It is valid in
 // both GLSL 1.10 and GLSL ES 1.00 (fixed loop bounds, texture2D, gl_FragColor,
 // no derivative functions).
 const shuffleShaderBody = `
-uniform vec2 frame_size;
+uniform vec2 frame;
 uniform vec4 rect_coords;
 uniform float time;
 uniform float progress;
@@ -100,7 +100,7 @@ float starLayer(vec2 uv, float t) {
 
 // galaxy renders the deep space backdrop for normalized frame coord q (y down).
 vec3 galaxy(vec2 q, float t) {
-	float aspect = frame_size.x / frame_size.y;
+	float aspect = frame.x / frame.y;
 	vec2 p = vec2(q.x * aspect, q.y);
 
 	// Nebula clouds from domain warped fbm.
@@ -128,10 +128,10 @@ vec3 galaxy(vec2 q, float t) {
 // card reads as floating in front of the galaxy.
 vec3 drawCard(vec3 bg, vec2 frag, vec2 center, vec2 halfSize, float ang, sampler2D tex) {
 	// Drop shadow: the card's box cast down and to the right.
-	vec2 shOff = vec2(0.012, 0.02) * frame_size.y;
+	vec2 shOff = vec2(0.012, 0.02) * frame.y;
 	vec2 sLocal = rot((frag - shOff) - center, -ang);
 	float sDist = length(max(abs(sLocal) - halfSize, 0.0));
-	float shadow = exp(-sDist / (0.05 * frame_size.y));
+	float shadow = exp(-sDist / (0.05 * frame.y));
 	bg = mix(bg, bg * 0.12, clamp(shadow, 0.0, 1.0) * 0.6);
 
 	// Card face.
@@ -149,9 +149,9 @@ vec3 drawCard(vec3 bg, vec2 frag, vec2 center, vec2 halfSize, float ang, sampler
 void main() {
 	// Work in pixels with a top-left origin so rotation stays rigid and texture
 	// sampling matches Fyne's image orientation (v = 0 at the top).
-	vec2 frag = vec2(gl_FragCoord.x, frame_size.y - gl_FragCoord.y);
+	vec2 frag = vec2(gl_FragCoord.x, frame.y - gl_FragCoord.y);
 
-	vec3 col = galaxy(frag / frame_size, time);
+	vec3 col = galaxy(frag / frame, time);
 
 	float p = clamp(progress, 0.0, 1.0);
 	// A raised cosine bell: 0 at the ends, 1 at the midpoint, and crucially with
@@ -163,16 +163,16 @@ void main() {
 	// so more of the galaxy shows around them; at p == 0 / p == 1 the active card
 	// still exactly fills the frame for a seamless hand off to the real slide.
 	float base = mix(1.0, 0.8, bell);
-	vec2 center = frame_size * 0.5;
+	vec2 center = frame * 0.5;
 
 	// The current slide eases the opposite way to the incoming one - a small
 	// drift, tilt and the shared recede - so both feel in motion rather than one
 	// card sliding over a static backdrop. It is the top card until the incoming
 	// slide swings over it.
-	float curTravel = 0.12 * frame_size.x;
-	vec2 curCenter = center + vec2(-direction * bell * curTravel, bell * 0.05 * frame_size.y);
+	float curTravel = 0.12 * frame.x;
+	vec2 curCenter = center + vec2(-direction * bell * curTravel, bell * 0.05 * frame.y);
 	float curAng = -direction * bell * 0.05;
-	vec2 curHalf = frame_size * 0.5 * base;
+	vec2 curHalf = frame * 0.5 * base;
 
 	// The incoming slide starts hidden directly behind the current one, swings
 	// out to one side (revealing the galaxy behind), then slides back to land
@@ -181,10 +181,10 @@ void main() {
 	// the incoming card has fully cleared the current card's bounds, otherwise
 	// the two overlap at the crossover and the incoming appears to push straight
 	// through the current slide instead of swinging around it.
-	float travel = 0.82 * frame_size.x;
-	vec2 inCenter = center + vec2(direction * bell * travel, -bell * 0.09 * frame_size.y);
+	float travel = 0.82 * frame.x;
+	vec2 inCenter = center + vec2(direction * bell * travel, -bell * 0.09 * frame.y);
 	float inAng = direction * bell * 0.13;
-	vec2 inHalf = frame_size * 0.5 * base * (1.0 + 0.06 * bell);
+	vec2 inHalf = frame * 0.5 * base * (1.0 + 0.06 * bell);
 
 	// Z order swaps at the midpoint, where the cards barely overlap so the
 	// change of stacking is invisible.
