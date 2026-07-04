@@ -8,9 +8,9 @@ import (
 	"strings"
 
 	"github.com/alecthomas/chroma/v2/lexers"
-	"github.com/watzon/goshot/pkg/chrome"
-	"github.com/watzon/goshot/pkg/content/code"
-	"github.com/watzon/goshot/pkg/render"
+	"github.com/watzon/goshot"
+	"github.com/watzon/goshot/chrome"
+	"github.com/watzon/goshot/code"
 	"github.com/yuin/goldmark"
 	"github.com/yuin/goldmark/ast"
 	"github.com/yuin/goldmark/extension"
@@ -211,7 +211,7 @@ func (p *parser) renderCodeBlock(n ast.Node, source []byte) {
 		raw = string(source[lines.At(0).Start:lines.At(lines.Len()-1).Stop])
 	}
 
-	codeContent := code.DefaultRenderer(raw).
+	codeContent := code.New(raw).
 		WithTheme("catppuccin-mocha"). // or "-latte" for light
 		WithLanguage(language).
 		WithLineNumbers(true).
@@ -220,11 +220,9 @@ func (p *parser) renderCodeBlock(n ast.Node, source []byte) {
 		WithMinWidth(600).
 		WithMaxWidth(1900)
 
-	draw := render.NewCanvas().
-		WithChrome(chrome.NewBlankChrome()).
-		WithContent(codeContent)
+	draw := goshot.New().WithChrome(chrome.Blank()).WithContent(codeContent)
 
-	img, err := draw.RenderToImage()
+	img, err := draw.Image()
 	if err != nil {
 		fyne.LogError("Failed to render code", err)
 	} else {

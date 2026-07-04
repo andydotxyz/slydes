@@ -1,13 +1,13 @@
 module slydes
 
-go 1.22.0
+go 1.23.0
 
 require (
 	fyne.io/fyne/v2 v2.8.0-rc1
 	github.com/BurntSushi/toml v1.5.0
 	github.com/alecthomas/chroma/v2 v2.14.0
 	github.com/go-pdf/fpdf v0.8.0
-	github.com/watzon/goshot v0.7.1
+	github.com/watzon/goshot v0.8.1
 	github.com/yuin/goldmark v1.7.8
 )
 
