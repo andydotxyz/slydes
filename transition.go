@@ -120,38 +120,49 @@ func changeSlide(p *presenting, to int) {
 	applyLiveSlide(p)
 }
 
-// startSlideTransition overlays the shuffle shader on the live window and drives
-// its progress uniform from 0 to 1, then drops back to the real slide.
+// startSlideTransition overlays the transition shaders on the live window and
+// drives their progress uniform from 0 to 1, then drops back to the real slide.
 func startSlideTransition(p *presenting, from, to int) {
-	shader := canvas.NewShader("slideShuffle", shuffleShaderSource, shuffleShaderSourceES)
-	shader.Textures = map[string]image.Image{
-		"current": p.captures[from],
-		"next":    p.captures[to],
-	}
-
 	dir := 1
 	if to < from {
 		dir = -1
 	}
 
+	layers := []fyne.CanvasObject{canvas.NewRectangle(color.Black), p.body}
+	var shaders []*canvas.Shader
+	if currentBackground != nil {
+		bg := currentBackground.newShader()
+		bg.Uniforms = map[string]float32{
+			"progress":  0,
+			"direction": float32(dir),
+			"time":      0,
+		}
+		shaders = append(shaders, bg)
+		layers = append(layers, bg)
+	}
+
+	shader := currentTransition.newShader()
+	shader.Textures = map[string]image.Image{
+		"current": p.captures[from],
+		"next":    p.captures[to],
+	}
 	shader.Uniforms = map[string]float32{
 		"progress":  0,
 		"direction": float32(dir),
 		"time":      0,
 	}
+	shaders = append(shaders, shader)
+	layers = append(layers, shader)
+
+	layers = append(layers, container.NewBorder(nil, container.NewStack(p.progressBox,
+		container.NewWithoutLayout(p.progressFill)), nil, nil))
 
 	p.animating = true
 	win := p.live
 	if currentPresenting != nil && currentPresenting.flipped {
 		win = p.control
 	}
-	win.SetContent(
-		container.NewStack(canvas.NewRectangle(color.Black),
-			p.body,
-			shader,
-			container.NewBorder(nil, container.NewStack(p.progressBox,
-				container.NewWithoutLayout(p.progressFill)), nil, nil)),
-	)
+	win.SetContent(container.NewStack(layers...))
 
 	seconds := float32(transitionDuration.Seconds())
 	finished := false
@@ -159,9 +170,11 @@ func startSlideTransition(p *presenting, from, to int) {
 		Duration: transitionDuration,
 		Curve:    fyne.AnimationLinear,
 		Tick: func(done float32) {
-			shader.Uniforms["progress"] = done
-			shader.Uniforms["time"] = done * seconds
-			shader.Refresh()
+			for _, s := range shaders {
+				s.Uniforms["progress"] = done
+				s.Uniforms["time"] = done * seconds
+				s.Refresh()
+			}
 
 			if done >= 1 && !finished {
 				finished = true
