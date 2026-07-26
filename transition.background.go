@@ -6,7 +6,7 @@ package main
 
 // starfieldBackground is deep space: domain warped nebula clouds, a drifting
 // galactic core and three parallax sheets of twinkling stars.
-var starfieldBackground = newShaderLayer("slideStarfield", `
+var starfieldBackground = newShaderLayer("slideStarfield", "Starfield", `
 uniform float time;
 
 // starLayer scatters one parallax sheet of twinkling stars across the plane.

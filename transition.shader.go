@@ -1,6 +1,8 @@
 package main
 
-import "fyne.io/fyne/v2/canvas"
+import (
+	"fyne.io/fyne/v2/canvas"
+)
 
 // This file holds the plumbing shared by the GLSL layers that make up a slide
 // transition. A transition is drawn as two stacked canvas.Shader objects:
@@ -34,19 +36,27 @@ import "fyne.io/fyne/v2/canvas"
 // varying: we derive every coordinate from gl_FragCoord and frame, exactly
 // as the built in shapes do.
 
+// slideTransitions lists the movements a deck can be presented with, and
+// currentTransition is the one in use.
+var slideTransitions = []*shaderLayer{shuffleTransition, flipTransition, twistTransition}
+
+var currentTransition = shuffleTransition
+
 // shaderLayer is one compiled-in GLSL effect in the two flavours Fyne needs.
 type shaderLayer struct {
 	name             string // unique - Fyne caches the compiled program under it
+	title            string // human readable, for the menu
 	source, sourceES []byte
 }
 
 // newShaderLayer prepends the shared prelude to body and wraps the result in
 // the desktop and ES headers. body must be valid in both GLSL 1.10 and GLSL ES
 // 1.00 (fixed loop bounds, texture2D, gl_FragColor, no derivative functions).
-func newShaderLayer(name, body string) *shaderLayer {
+func newShaderLayer(name, title, body string) *shaderLayer {
 	src := shaderPrelude + body
 	return &shaderLayer{
 		name:   name,
+		title:  title,
 		source: []byte("#version 110\n" + src),
 		sourceES: []byte(`#version 100
 

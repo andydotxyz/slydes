@@ -42,7 +42,31 @@ func main() {
 		}
 	}
 
+	w.SetMainMenu(fyne.NewMainMenu(
+		fyne.NewMenu("File",
+			fyne.NewMenuItem("Open", g.openFile)),
+		transitionMenu(),
+	))
 	w.ShowAndRun()
+}
+
+// transitionMenu builds the "Transitions" menu: one item per movement, ticked
+// when it is the one in use.
+func transitionMenu() *fyne.Menu {
+	menu := fyne.NewMenu("Transitions")
+	for _, t := range slideTransitions {
+		item := fyne.NewMenuItem(t.title, nil)
+		item.Checked = t == currentTransition
+		item.Action = func() {
+			currentTransition = t
+			for i, other := range menu.Items {
+				other.Checked = slideTransitions[i] == currentTransition
+			}
+			menu.Refresh()
+		}
+		menu.Items = append(menu.Items, item)
+	}
+	return menu
 }
 
 func nextSlide() {
