@@ -38,7 +38,8 @@ import (
 
 // slideTransitions lists the movements a deck can be presented with, and
 // currentTransition is the one in use.
-var slideTransitions = []*shaderLayer{shuffleTransition, flipTransition, twistTransition}
+var slideTransitions = []*shaderLayer{shuffleTransition, flipTransition, twistTransition,
+	pixelateTransition}
 
 var currentTransition = shuffleTransition
 

@@ -150,6 +150,9 @@ func startSlideTransition(p *presenting, from, to int) {
 		"progress":  0,
 		"direction": float32(dir),
 		"time":      0,
+		// Captures are the full window with the slide letterboxed inside them, so
+		// effects that have to respect the slide's own edges need its shape.
+		"slideRatio": slideRatio,
 	}
 	shaders = append(shaders, shader)
 	layers = append(layers, shader)
