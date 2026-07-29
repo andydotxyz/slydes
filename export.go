@@ -26,6 +26,7 @@ func export(s *slides, w io.Writer) error {
 		Size:    fpdf.SizeType{Wd: 1600, Ht: 900},
 		UnitStr: fpdf.UnitPoint,
 	})
+	doc.SetCatalogSort(true) // else fonts and images are written in map order, which varies per run
 	pageWidth, totalHeight := doc.GetPageSize()
 	pageHeight := pageWidth * (9.0 / 16.0)
 	for i, item := range s.items {
@@ -117,7 +118,7 @@ func renderObjectsToPDF(doc *fpdf.Fpdf, o fyne.CanvasObject, off fyne.Position) 
 			r = bytes.NewReader(b.Bytes())
 		} else if c.File != "" {
 			r, err = os.Open(c.File)
-			defer r.(io.ReadCloser).Close()
+			defer func() { _ = r.(io.ReadCloser).Close() }()
 		} else if c.Resource != nil {
 			r = bytes.NewReader(c.Resource.Content())
 		}

@@ -102,7 +102,7 @@ func (s *slides) parseHeader(blob string) (c config) {
 		f, err := os.Open(path)
 		if err == nil {
 			th, err := theme.FromJSONReader(f)
-			f.Close()
+			_ = f.Close()
 			if err == nil {
 				s.theme = th
 			}
