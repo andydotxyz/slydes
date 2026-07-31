@@ -191,10 +191,11 @@ func (p *parser) closeElement(n ast.Node, flush func()) (ast.WalkStatus, error) 
 
 // renderBullet builds a bullet from the accumulated segments, if any.
 func (p *parser) renderBullet() {
-	if len(p.segments) > 0 {
-		p.c.content = append(p.c.content, newBullet(p.segments, p.listDepth-1, p.parent.theme))
-		p.segments = nil
+	if len(p.segments) == 0 {
+		p.segments = []textSegment{{text: ""}}
 	}
+	p.c.content = append(p.c.content, newBullet(p.segments, p.listDepth-1, p.parent.theme))
+	p.segments = nil
 }
 
 func (p *parser) renderCodeBlock(n ast.Node, source []byte) {
