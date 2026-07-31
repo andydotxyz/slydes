@@ -39,15 +39,6 @@ type bullet struct {
 	bgs   []*canvas.Rectangle // code-span backgrounds; nil entry for non-code segments
 }
 
-// segmentsText joins the plain text of every segment.
-func segmentsText(segments []textSegment) string {
-	s := ""
-	for _, seg := range segments {
-		s += seg.text
-	}
-	return s
-}
-
 func newBullet(segments []textSegment, indent int, th fyne.Theme) *bullet {
 	return &bullet{theme: th, segments: segments, content: segmentsText(segments), indent: indent, scale: 1}
 }
@@ -148,6 +139,63 @@ func (b *bullet) setScale(scale float32) {
 	for _, t := range b.texts {
 		t.TextSize = theme.TextSize() * scale
 	}
+}
+
+type separator struct {
+	widget.BaseWidget
+	theme fyne.Theme
+
+	scale float32
+
+	line *canvas.Rectangle
+}
+
+func newSeparator(th fyne.Theme) *separator {
+	return &separator{theme: th, scale: 1}
+}
+
+func (s *separator) CreateRenderer() fyne.WidgetRenderer {
+	s.line = canvas.NewRectangle(s.theme.Color(theme.ColorNameSeparator, theme.VariantLight))
+
+	objs := []fyne.CanvasObject{s.line}
+	return widget.NewSimpleRenderer(container.NewWithoutLayout(objs...))
+}
+
+func (s *separator) Refresh() {
+	if s.line != nil {
+		s.line.FillColor = s.theme.Color(theme.ColorNameSeparator, theme.VariantLight)
+		s.line.Refresh()
+	}
+}
+
+func (s *separator) Resize(size fyne.Size) {
+	h := s.theme.Size(theme.SizeNameSeparatorThickness) * s.scale
+	pad := s.theme.Size(theme.SizeNamePadding) * s.scale
+	s.line.Move(fyne.NewPos(0, pad))
+	s.line.Resize(fyne.NewSize(size.Width, h))
+}
+
+func (s *separator) MinSize() fyne.Size {
+	h := s.theme.Size(theme.SizeNameSeparatorThickness) * s.scale
+	pad := s.theme.Size(theme.SizeNamePadding) * s.scale
+	return fyne.NewSize(h, h+2*pad)
+}
+
+func (s *separator) setScale(scale float32) {
+	_ = test.WidgetRenderer(s)
+	s.scale = scale
+
+	h := s.theme.Size(theme.SizeNameSeparatorThickness) * s.scale
+	s.line.Resize(fyne.NewSize(s.line.Size().Width, h))
+}
+
+// segmentsText joins the plain text of every segment.
+func segmentsText(segments []textSegment) string {
+	s := ""
+	for _, seg := range segments {
+		s += seg.text
+	}
+	return s
 }
 
 // richLine renders a single line of styled text segments, used for slide

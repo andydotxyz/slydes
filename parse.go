@@ -156,10 +156,16 @@ func (p *parser) closeElement(n ast.Node, flush func()) (ast.WalkStatus, error) 
 		if !p.list {
 			flush()
 			if len(p.segments) > 0 {
-				// color.Black is a placeholder; addContent recolours body
-				// lines to the theme foreground.
-				p.c.content = append(p.c.content, newRichLine(p.segments, color.Black, false))
-				p.segments = nil
+				// replace the markdown separator as we used that for slide break
+				if len(p.segments) == 1 && p.segments[0].text == "--" {
+					p.c.content = append(p.c.content, newSeparator(p.parent.theme))
+					p.segments = nil
+				} else {
+					// color.Black is a placeholder; addContent recolours body
+					// lines to the theme foreground.
+					p.c.content = append(p.c.content, newRichLine(p.segments, color.Black, false))
+					p.segments = nil
+				}
 			}
 		}
 	case "ListItem":
