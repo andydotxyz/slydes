@@ -72,7 +72,7 @@
                         "Type": "*widget.Label",
                         "Struct": {
                           "Hidden": false,
-                          "Text": "(preview))",
+                          "Text": "(previews)",
                           "Alignment": 0,
                           "Wrapping": 0,
                           "TextStyle": {

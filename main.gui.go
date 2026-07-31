@@ -119,7 +119,7 @@ func (g *gui) makeUI() fyne.CanvasObject {
 		g.refresh = true
 	}
 	g.content.OnCursorChanged = g.slideForCursor
-	g.content.SetText("# Slide 1\n")
+	g.content.SetText(blankSlides)
 
 	split := container.NewHSplit(g.content, newAspectContainer(g.render))
 	split.Offset = 0.35

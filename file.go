@@ -12,11 +12,25 @@ import (
 	"fyne.io/fyne/v2/widget"
 )
 
+const blankSlides = `# Slide 1
+## Subheading
+
+---
+
+# Slide 2
+
+This one has content
+
+* And
+* A
+* List
+`
+
 func (g *gui) clearFile() {
 	dialog.ShowConfirm("Clear content", "Are you sure you want to reset your slide content", func(ok bool) {
 		if ok {
 			g.s.uri = nil
-			g.content.SetText("# Slide 1")
+			g.content.SetText(blankSlides)
 		}
 	}, g.win)
 }
