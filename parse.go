@@ -35,7 +35,7 @@ func (s *slides) parseMarkdown(data string) content {
 		return c
 	}
 
-	r := &parser{c: &c, parent: s}
+	r := &parser{c: &c, parent: s, closedList: make(map[int]bool)}
 	md := goldmark.New(goldmark.WithRenderer(r), goldmark.WithExtensions(extension.Strikethrough))
 	err := md.Convert([]byte(data), nil)
 	if err != nil {
@@ -50,8 +50,9 @@ type parser struct {
 	listDepth                       int
 	parent                          *slides
 
-	segments []textSegment // styled runs accumulated for the current bullet
-	c        *content
+	segments   []textSegment // styled runs accumulated for the current bullet
+	c          *content
+	closedList map[int]bool
 }
 
 func (p *parser) AddOptions(...renderer.Option) {}
@@ -76,6 +77,7 @@ func (p *parser) Render(_ io.Writer, source []byte, n ast.Node) error {
 		switch n.Kind().String() {
 		case "List":
 			if p.list { // a nested list: flush the parent item's text first
+				p.closedList[p.listDepth] = true
 				flush()
 				p.renderBullet()
 			}
@@ -169,8 +171,12 @@ func (p *parser) closeElement(n ast.Node, flush func()) (ast.WalkStatus, error) 
 			}
 		}
 	case "ListItem":
-		flush()
-		p.renderBullet()
+		if p.closedList[p.listDepth] {
+			p.closedList[p.listDepth] = false
+		} else {
+			flush()
+			p.renderBullet()
+		}
 	case "Emphasis":
 		flush() // close the styled run before clearing the style
 		if em, ok := n.(*ast.Emphasis); ok {
