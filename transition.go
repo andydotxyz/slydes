@@ -109,7 +109,11 @@ func changeSlide(p *presenting, to int) {
 
 	// Render the new neighbour off-screen so the next transition has its texture
 	// ready. Runs in a goroutine so it does not block the current navigation.
-	go ensureNeighborsCaptured(p)
+	go func() {
+		// delay so we do not impact transition
+		time.Sleep(transitionDuration)
+		ensureNeighborsCaptured(p)
+	}()
 
 	if p.body != nil && from >= 0 && from < len(p.captures) &&
 		to >= 0 && to < len(p.captures) && p.captures[from] != nil && p.captures[to] != nil {
