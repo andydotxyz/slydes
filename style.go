@@ -12,6 +12,7 @@ const (
 	colorNameHeader           = "header"
 	colorNameSubHeader        = "subHeader"
 	colorNameHeaderBackground = "headerBackground"
+	colorNameFooterBackground = "footerBackground"
 )
 
 type slideTheme struct {

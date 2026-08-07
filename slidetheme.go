@@ -1,6 +1,8 @@
 package main
 
 import (
+	"image/color"
+
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/container"
@@ -10,7 +12,12 @@ import (
 func (s *slide) themeBackground() fyne.CanvasObject {
 	bg := canvas.NewRectangle(s.parent.theme.Color(theme.ColorNameBackground, theme.VariantLight))
 	top := canvas.NewRectangle(s.parent.theme.Color(colorNameHeaderBackground, theme.VariantLight))
-	bottom := canvas.NewRectangle(s.parent.theme.Color(colorNameHeaderBackground, theme.VariantLight))
+
+	bgCol := s.parent.theme.Color(colorNameFooterBackground, theme.VariantLight)
+	if bgCol == color.Transparent {
+		bgCol = top.FillColor
+	}
+	bottom := canvas.NewRectangle(bgCol)
 	return container.New(&backgroundLayout{s: s}, bg, top, bottom)
 }
 
