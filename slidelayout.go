@@ -77,7 +77,7 @@ func (s *slide) layoutFallback(size fyne.Size, scale float32) {
 		subPad = s.subheading.MinSize().Height
 	}
 
-	contentSize := size.SubtractWidthHeight(pad*2, size.Height/9*2+subPad+pad*2)
+	contentSize := size.SubtractWidthHeight(pad*2, size.Height/8.5*2+subPad+pad*2)
 	contentPos := fyne.NewPos(pad, size.Height/6+subPad+pad)
 	layoutContent(s.content.Objects[skip:], scale, contentSize, contentPos)
 }
@@ -103,6 +103,6 @@ func (s *slide) layoutFooter(size fyne.Size) {
 
 		height := t.MinSize().Height
 		t.Resize(fyne.NewSize(size.Width-pad*2, height))
-		t.Move(fyne.NewPos(pad, size.Height-progressHeight*2-height))
+		t.Move(fyne.NewPos(pad, size.Height-height-progressHeight*scale))
 	}
 }

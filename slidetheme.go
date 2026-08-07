@@ -34,7 +34,7 @@ func (l *backgroundLayout) Layout(objs []fyne.CanvasObject, size fyne.Size) {
 	top.Resize(fyne.NewSize(size.Width, size.Height/6))
 	top.Move(fyne.Position{})
 
-	bottomHeight := size.Height / 18
+	bottomHeight := size.Height / 14
 	bottom.Show()
 	bottom.Resize(fyne.NewSize(size.Width, bottomHeight))
 	bottom.Move(fyne.NewPos(0, size.Height-bottomHeight))
