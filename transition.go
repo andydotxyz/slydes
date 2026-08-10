@@ -101,6 +101,13 @@ func changeSlide(p *presenting, to int) {
 	if p.animating {
 		return // ignore navigation while a transition is playing
 	}
+	go func() {
+		time.Sleep(transitionDuration)
+		fyne.Do(func() {
+			p.g.moveCursor(to)
+			_ = p.g.s.current.Set(to)
+		})
+	}()
 
 	from := p.id
 	p.id = to

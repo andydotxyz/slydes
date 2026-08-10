@@ -5,6 +5,7 @@ import (
 	"image"
 	"image/color"
 	"sync"
+	"time"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/canvas"
@@ -28,6 +29,7 @@ type presenting struct {
 	deck                 *slides
 	body                 *fyne.Container // the live window's aspect container
 	flipped              bool
+	g                    *gui
 
 	id    int
 	items []string
@@ -89,7 +91,7 @@ func (g *gui) showPresentWindow() {
 	body := newAspectContainer(content)
 	p := &presenting{
 		live: w2, slide: content, deck: g.s, body: body, id: id, items: items,
-		captures: make([]image.Image, len(items)),
+		captures: make([]image.Image, len(items)), g: g,
 	}
 	p.progressBox = canvas.NewRectangle(color.Black)
 	p.progressBox.SetMinSize(fyne.NewSquareSize(progressHeight))
@@ -151,10 +153,14 @@ func (g *gui) showPresentWindow() {
 
 	currentPresenting = p
 	w2.Show()
+	changeSlide(p, id)
 
-	// Render and cache a bitmap of every slide so transitions can pass the
-	// outgoing and incoming slides to the shuffle shader as textures.
-	go precaptureSlides(p)
+	// TODO remove this workaround and move it to layout?
+	// Caused by the window size not being set when initial slide is loaded.
+	go func() {
+		time.Sleep(time.Millisecond * 100)
+		p.updateProgress()
+	}()
 }
 
 func addPresentationKeys(w fyne.Window) {

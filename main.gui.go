@@ -192,7 +192,7 @@ func (g *gui) makeUI() fyne.CanvasObject {
 	)
 }
 
-func (g *gui) moveToSlide(id int) {
+func (g *gui) moveCursor(id int) {
 	g.content.CursorColumn = 0
 	if len(g.s.divideRows) == 0 || id == 0 {
 		g.content.CursorRow = 0
@@ -201,6 +201,10 @@ func (g *gui) moveToSlide(id int) {
 		g.content.CursorRow = div + 1
 	}
 	g.content.Refresh()
+}
+
+func (g *gui) moveToSlide(id int) {
+	g.moveCursor(id)
 
 	g.win.Canvas().Focus(g.content)
 	_ = g.s.current.Set(id)
