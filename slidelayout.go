@@ -14,8 +14,7 @@ func (s *slide) layout(size fyne.Size) {
 	switch s.variant {
 	case headingSlide:
 		s.layoutTitleSlide(size, scale)
-	case imageSlide:
-		s.layoutImage(size)
+	case imageSlide: // nothing above the image, which the background sizes
 	default:
 		s.layoutFallback(size, scale)
 	}
@@ -80,12 +79,6 @@ func (s *slide) layoutFallback(size fyne.Size, scale float32) {
 	contentSize := size.SubtractWidthHeight(pad*2, size.Height/8.5*2+subPad+pad*2)
 	contentPos := fyne.NewPos(pad, size.Height/6+subPad+pad)
 	layoutContent(s.content.Objects[skip:], scale, contentSize, contentPos)
-}
-
-func (s *slide) layoutImage(size fyne.Size) {
-	for _, o := range s.content.Objects[1:] {
-		o.Resize(size)
-	}
 }
 
 // layoutFooter positions the three footer labels along the bottom of the slide.

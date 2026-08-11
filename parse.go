@@ -270,7 +270,9 @@ func (p *parser) renderHeading(n ast.Node, flush func()) {
 func (p *parser) renderImage(n ast.Node) {
 	name := string(n.(*ast.Image).Destination)
 	path := filepath.Join(p.root(), name)
-	if len(p.c.heading) == 0 {
+	// An image that is the slide's first content becomes its background,
+	// anything after it is drawn on top. Later images are inline content.
+	if p.c.bgpath == "" && len(p.c.heading) == 0 && len(p.c.subheading) == 0 && len(p.c.content) == 0 {
 		p.c.bgpath = path
 	} else {
 		img := canvas.NewImageFromFile(path)

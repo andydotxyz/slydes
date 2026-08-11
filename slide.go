@@ -38,15 +38,16 @@ func newSlide(data string, index int, parent *slides) *slide {
 	s := &slide{parent: parent, index: index}
 	s.ExtendBaseWidget(s)
 
-	s.bg = s.themeBackground()
-	items := []fyne.CanvasObject{s.bg}
 	s.heading = nil
 	s.subheading = nil
 	if data == "" {
 		s.bg = canvas.NewRectangle(color.Black)
 		s.content = container.NewWithoutLayout()
 	} else {
-		s.addContent(&items, parent.parseMarkdown(data))
+		in := parent.parseMarkdown(data)
+		s.bg = s.newBackground(in.bgpath)
+		items := []fyne.CanvasObject{s.bg}
+		s.addContent(&items, in)
 		s.content = container.NewWithoutLayout(items...)
 	}
 
@@ -55,6 +56,18 @@ func newSlide(data string, index int, parent *slides) *slide {
 		s.footer.Hide()
 	}
 	return s
+}
+
+// newBackground builds the backdrop for this slide, being the theme background
+// plus the image the markdown opened with, where there is one.
+func (s *slide) newBackground(imgPath string) fyne.CanvasObject {
+	if imgPath == "" {
+		return s.themeBackground()
+	}
+
+	img := canvas.NewImageFromFile(imgPath)
+	img.ScaleMode = canvas.ImageScaleFastest
+	return s.themeBackground(img)
 }
 
 // makeFooter builds the three footer labels: presenter name (left), configurable
@@ -103,10 +116,7 @@ func (s *slide) MinSize() fyne.Size {
 
 func (s *slide) addContent(items *[]fyne.CanvasObject, in content) {
 	s.notes = in.notes
-	if in.bgpath != "" {
-		img := canvas.NewImageFromFile(in.bgpath)
-		img.ScaleMode = canvas.ImageScaleFastest
-		*items = append(*items, img)
+	if in.bgpath != "" && len(in.heading) == 0 && len(in.subheading) == 0 && len(in.content) == 0 {
 		s.variant = imageSlide
 		return
 	}
@@ -155,11 +165,12 @@ func (s *slide) setSource(data string, index int) {
 		return
 	}
 
-	s.bg = s.themeBackground()
+	in := s.parent.parseMarkdown(data)
+	s.bg = s.newBackground(in.bgpath)
 	items := []fyne.CanvasObject{s.bg}
 	s.heading = nil
 	s.subheading = nil
-	s.addContent(&items, s.parent.parseMarkdown(data))
+	s.addContent(&items, in)
 	s.content.Objects = items
 	if s.variant == imageSlide {
 		s.footer.Hide()
