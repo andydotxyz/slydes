@@ -134,49 +134,83 @@ func renderObjectsToPDF(doc *fpdf.Fpdf, o fyne.CanvasObject, off fyne.Position) 
 	return nil
 }
 
+// pdfColor converts a colour to the 0-255 components fpdf expects plus the
+// opacity to apply while drawing it. RGBA() is alpha-premultiplied, so the
+// components are scaled back up: without that a translucent colour would darken
+// towards black instead of blending with what is behind it.
+func pdfColor(c color.Color) (r, g, b int, alpha float64) {
+	if c == nil {
+		return 0, 0, 0, 0
+	}
+	cr, cg, cb, ca := c.RGBA()
+	if ca == 0 {
+		return 0, 0, 0, 0
+	}
+
+	unmul := func(v uint32) int {
+		return int(uint64(v) * 0xff / uint64(ca))
+	}
+	return unmul(cr), unmul(cg), unmul(cb), float64(ca) / 0xffff
+}
+
+// withAlpha runs draw with the graphics state set to the given opacity and
+// restores it afterward.
+func withAlpha(doc *fpdf.Fpdf, alpha float64, draw func()) {
+	if alpha >= 1 {
+		draw()
+		return
+	}
+
+	doc.SetAlpha(alpha, "Normal")
+	draw()
+	doc.SetAlpha(1, "Normal")
+}
+
+// drawShape paints a shape's fill and then its outline, each at its own
+// opacity.
+func drawShape(doc *fpdf.Fpdf, fill, stroke color.Color, strokeWidth float32, draw func(style string)) {
+	if r, g, b, a := pdfColor(fill); a > 0 {
+		doc.SetFillColor(r, g, b)
+		withAlpha(doc, a, func() { draw("F") })
+	}
+	if strokeWidth <= 0 {
+		return
+	}
+	if r, g, b, a := pdfColor(stroke); a > 0 {
+		doc.SetDrawColor(r, g, b)
+		doc.SetLineWidth(float64(strokeWidth))
+		withAlpha(doc, a, func() { draw("D") })
+	}
+}
+
 func renderCircleToPDF(doc *fpdf.Fpdf, c *canvas.Circle, off fyne.Position) {
 	x, y := c.Position().Add(off).Components()
 	w, h := c.Size().Components()
-	style := ""
-	if c.FillColor != nil && c.FillColor != color.Transparent {
-		style += "F"
-		r, g, b, _ := c.FillColor.RGBA()
-		doc.SetFillColor(int(r>>8), int(g>>8), int(b>>8))
-	}
-	if c.StrokeWidth > 0 && c.StrokeColor != nil && c.StrokeColor != color.Transparent {
-		style += "D"
-		r, g, b, _ := c.StrokeColor.RGBA()
-		doc.SetDrawColor(int(r), int(g), int(b))
-		doc.SetLineWidth(float64(c.StrokeWidth))
-	}
 	r := w / 2
 	if h < w {
 		r = h / 2
 	}
-	doc.Circle(float64(x+r), float64(y+r), float64(r), style)
+
+	drawShape(doc, c.FillColor, c.StrokeColor, c.StrokeWidth, func(style string) {
+		doc.Circle(float64(x+r), float64(y+r), float64(r), style)
+	})
 }
 
 func renderRectangleToPDF(doc *fpdf.Fpdf, c *canvas.Rectangle, off fyne.Position) {
 	x, y := c.Position().Add(off).Components()
 	w, h := c.Size().Components()
-	style := ""
-	if c.FillColor != nil && c.FillColor != color.Transparent {
-		style += "F"
-		r, g, b, _ := c.FillColor.RGBA()
-		doc.SetFillColor(int(r>>8), int(g>>8), int(b>>8))
-	}
-	if c.StrokeWidth > 0 && c.StrokeColor != nil && c.StrokeColor != color.Transparent {
-		style += "D"
-		r, g, b, _ := c.StrokeColor.RGBA()
-		doc.SetDrawColor(int(r), int(g), int(b))
-		doc.SetLineWidth(float64(c.StrokeWidth))
-	}
-	doc.Rect(float64(x), float64(y), float64(w), float64(h), style)
+
+	drawShape(doc, c.FillColor, c.StrokeColor, c.StrokeWidth, func(style string) {
+		doc.Rect(float64(x), float64(y), float64(w), float64(h), style)
+	})
 }
 
 func renderTextToPDF(doc *fpdf.Fpdf, c *canvas.Text, off fyne.Position) {
-	r, g, b, _ := c.Color.RGBA()
-	doc.SetTextColor(int(r>>8), int(g>>8), int(b>>8))
+	r, g, b, alpha := pdfColor(c.Color)
+	if alpha == 0 {
+		return
+	}
+	doc.SetTextColor(r, g, b)
 
 	x, y := c.Position().Add(off).Components()
 	size, base := fyne.CurrentApp().Driver().RenderedTextSize(c.Text, c.TextSize, c.TextStyle, c.FontSource)
@@ -206,5 +240,7 @@ func renderTextToPDF(doc *fpdf.Fpdf, c *canvas.Text, off fyne.Position) {
 		topPad = 0
 	}
 
-	doc.Text(float64(x), float64(y+base+topPad), c.Text)
+	withAlpha(doc, alpha, func() {
+		doc.Text(float64(x), float64(y+base+topPad), c.Text)
+	})
 }
