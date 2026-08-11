@@ -155,6 +155,8 @@ func (g *gui) showPresentWindow() {
 	w2.Show()
 	changeSlide(p, id)
 
+	go precaptureSlides(p)
+
 	// TODO remove this workaround and move it to layout?
 	// Caused by the window size not being set when initial slide is loaded.
 	go func() {
