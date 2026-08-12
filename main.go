@@ -100,6 +100,7 @@ func exitPresent() {
 		return
 	}
 
+	close(currentPresenting.done)
 	currentPresenting.live.Close()
 	if currentPresenting.control != nil {
 		currentPresenting.control.Close()

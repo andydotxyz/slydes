@@ -101,26 +101,22 @@ func changeSlide(p *presenting, to int) {
 	if p.animating {
 		return // ignore navigation while a transition is playing
 	}
+	if to != p.id {
+		p.startTimer() // the clock runs from the first move off the opening slide
+	}
 	go func() {
-		time.Sleep(transitionDuration)
+		time.Sleep(transitionDuration + (time.Millisecond * 250))
 		fyne.Do(func() {
 			p.g.moveCursor(to)
 			_ = p.g.s.current.Set(to)
 		})
+		ensureNeighborsCaptured(p)
 	}()
 
 	from := p.id
 	p.id = to
 	updatePreviews(p)
 	p.updateProgress()
-
-	// Render the new neighbour off-screen so the next transition has its texture
-	// ready. Runs in a goroutine so it does not block the current navigation.
-	go func() {
-		// delay so we do not impact transition
-		time.Sleep(transitionDuration)
-		ensureNeighborsCaptured(p)
-	}()
 
 	if p.body != nil && from >= 0 && from < len(p.captures) &&
 		to >= 0 && to < len(p.captures) && p.captures[from] != nil && p.captures[to] != nil {

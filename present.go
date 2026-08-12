@@ -2,6 +2,7 @@ package main
 
 import (
 	_ "embed"
+	"fmt"
 	"image"
 	"image/color"
 	"sync"
@@ -38,6 +39,10 @@ type presenting struct {
 	progressFraction          float32
 	notesLabel                *widget.Label
 
+	clockText, timerText *widget.RichText
+	started              time.Time     // when the first slide transition happened
+	done                 chan struct{} // closed when the presentation ends
+
 	captures        []image.Image // one rendered bitmap per slide, for transition textures
 	captureSize     fyne.Size     // resolution captures are rendered at
 	capturePixScale float32       // pixel scale (size × pixScale = framebuffer pixels)
@@ -51,6 +56,43 @@ func (p *presenting) updateNotes() {
 		return
 	}
 	p.notesLabel.SetText(p.preview.notes)
+}
+
+func (p *presenting) startTimer() {
+	if p.started.IsZero() {
+		p.started = time.Now()
+	}
+}
+
+// runClocks updates the presenter display's wall clock and elapsed timer once a
+// second, until the presentation ends.
+func (p *presenting) runClocks() {
+	p.updateClocks()
+
+	go func() {
+		tick := time.NewTicker(time.Second)
+		defer tick.Stop()
+
+		for {
+			select {
+			case <-p.done:
+				return
+			case <-tick.C:
+				fyne.Do(p.updateClocks)
+			}
+		}
+	}()
+}
+
+func (p *presenting) updateClocks() {
+	p.clockText.ParseMarkdown(time.Now().Format("# 3:04pm"))
+
+	var elapsed time.Duration
+	if !p.started.IsZero() {
+		elapsed = time.Since(p.started)
+	}
+	p.timerText.ParseMarkdown(fmt.Sprintf("# %02d:%02d",
+		int(elapsed.Minutes()), int(elapsed.Seconds())%60))
 }
 
 // fraction returns how far through the deck we are, from 0 (first slide) to 1 (last).
@@ -91,7 +133,7 @@ func (g *gui) showPresentWindow() {
 	body := newAspectContainer(content)
 	p := &presenting{
 		live: w2, slide: content, deck: g.s, body: body, id: id, items: items,
-		captures: make([]image.Image, len(items)), g: g,
+		captures: make([]image.Image, len(items)), g: g, done: make(chan struct{}),
 	}
 	p.progressBox = canvas.NewRectangle(color.Black)
 	p.progressBox.SetMinSize(fyne.NewSquareSize(progressHeight))
@@ -143,6 +185,10 @@ func (g *gui) showPresentWindow() {
 		p.notesLabel = pres.notes
 		pres.notes.SizeName = theme.SizeNameSubHeadingText
 		p.updateNotes()
+
+		p.clockText = pres.clock
+		p.timerText = pres.timer
+		p.runClocks()
 
 		addPresentationKeys(w3)
 		w3.Show()

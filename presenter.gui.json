@@ -21,25 +21,53 @@
                 "Layout": "Stack",
                 "Objects": [
                   {
-                    "Type": "*widget.Label",
+                    "Type": "*widget.RichText",
                     "Struct": {
                       "Hidden": false,
-                      "Text": "Current Slide",
-                      "Alignment": 0,
+                      "Segments": [
+                        {
+                          "Style": {
+                            "Alignment": 0,
+                            "ColorName": "foreground",
+                            "Inline": true,
+                            "SizeName": "headingText",
+                            "TextStyle": {
+                              "Bold": true,
+                              "Italic": false,
+                              "Monospace": false,
+                              "Symbol": false,
+                              "TabWidth": 0,
+                              "Underline": false,
+                              "Strikethrough": false
+                            }
+                          },
+                          "Text": "Current Slide"
+                        },
+                        {
+                          "Style": {
+                            "Alignment": 0,
+                            "ColorName": "foreground",
+                            "Inline": false,
+                            "SizeName": "text",
+                            "TextStyle": {
+                              "Bold": false,
+                              "Italic": false,
+                              "Monospace": false,
+                              "Symbol": false,
+                              "TabWidth": 0,
+                              "Underline": false,
+                              "Strikethrough": false
+                            }
+                          },
+                          "Text": ""
+                        }
+                      ],
                       "Wrapping": 0,
-                      "TextStyle": {
-                        "Bold": true,
-                        "Italic": false,
-                        "Monospace": false,
-                        "Symbol": false,
-                        "TabWidth": 0,
-                        "Underline": false,
-                        "Strikethrough": false
-                      },
-                      "Truncation": 0,
-                      "Importance": 0,
-                      "SizeName": "",
-                      "Selectable": false
+                      "Scroll": 3,
+                      "Truncation": 0
+                    },
+                    "Properties": {
+                      "text": "# Current Slide"
                     }
                   },
                   {
@@ -86,6 +114,7 @@
                         "Objects": [
                           {
                             "Type": "*widget.Label",
+                            "Name": "notes",
                             "Struct": {
                               "Hidden": false,
                               "Text": "Presenter Notes",
@@ -107,26 +136,132 @@
                             }
                           },
                           {
-                            "Type": "*widget.Label",
-                            "Name": "timer",
-                            "Struct": {
-                              "Hidden": false,
-                              "Text": "0:00:00",
-                              "Alignment": 1,
-                              "Wrapping": 0,
-                              "TextStyle": {
-                                "Bold": true,
-                                "Italic": false,
-                                "Monospace": true,
-                                "Symbol": false,
-                                "TabWidth": 0,
-                                "Underline": false,
-                                "Strikethrough": false
+                            "Type": "*fyne.Container",
+                            "Layout": "Grid",
+                            "Objects": [
+                              {
+                                "Type": "*fyne.Container",
+                                "Layout": "Center",
+                                "Objects": [
+                                  {
+                                    "Type": "*widget.RichText",
+                                    "Name": "clock",
+                                    "Struct": {
+                                      "Hidden": false,
+                                      "Segments": [
+                                        {
+                                          "Style": {
+                                            "Alignment": 0,
+                                            "ColorName": "",
+                                            "Inline": true,
+                                            "SizeName": "",
+                                            "TextStyle": {
+                                              "Bold": true,
+                                              "Italic": false,
+                                              "Monospace": false,
+                                              "Symbol": false,
+                                              "TabWidth": 0,
+                                              "Underline": false,
+                                              "Strikethrough": false
+                                            }
+                                          },
+                                          "Text": "12:34"
+                                        },
+                                        {
+                                          "Style": {
+                                            "Alignment": 0,
+                                            "ColorName": "",
+                                            "Inline": false,
+                                            "SizeName": "",
+                                            "TextStyle": {
+                                              "Bold": false,
+                                              "Italic": false,
+                                              "Monospace": false,
+                                              "Symbol": false,
+                                              "TabWidth": 0,
+                                              "Underline": false,
+                                              "Strikethrough": false
+                                            }
+                                          },
+                                          "Text": ""
+                                        }
+                                      ],
+                                      "Wrapping": 0,
+                                      "Scroll": 3,
+                                      "Truncation": 0
+                                    },
+                                    "Properties": {
+                                      "text": "# 12:34"
+                                    }
+                                  }
+                                ],
+                                "Properties": {
+                                  "layout": "Center"
+                                }
                               },
-                              "Truncation": 0,
-                              "Importance": 0,
-                              "SizeName": "",
-                              "Selectable": false
+                              {
+                                "Type": "*fyne.Container",
+                                "Layout": "Center",
+                                "Objects": [
+                                  {
+                                    "Type": "*widget.RichText",
+                                    "Name": "timer",
+                                    "Struct": {
+                                      "Hidden": false,
+                                      "Segments": [
+                                        {
+                                          "Style": {
+                                            "Alignment": 0,
+                                            "ColorName": "",
+                                            "Inline": true,
+                                            "SizeName": "",
+                                            "TextStyle": {
+                                              "Bold": true,
+                                              "Italic": false,
+                                              "Monospace": false,
+                                              "Symbol": false,
+                                              "TabWidth": 0,
+                                              "Underline": false,
+                                              "Strikethrough": false
+                                            }
+                                          },
+                                          "Text": "00:00"
+                                        },
+                                        {
+                                          "Style": {
+                                            "Alignment": 0,
+                                            "ColorName": "",
+                                            "Inline": false,
+                                            "SizeName": "",
+                                            "TextStyle": {
+                                              "Bold": false,
+                                              "Italic": false,
+                                              "Monospace": false,
+                                              "Symbol": false,
+                                              "TabWidth": 0,
+                                              "Underline": false,
+                                              "Strikethrough": false
+                                            }
+                                          },
+                                          "Text": ""
+                                        }
+                                      ],
+                                      "Wrapping": 0,
+                                      "Scroll": 3,
+                                      "Truncation": 0
+                                    },
+                                    "Properties": {
+                                      "text": "# 00:00"
+                                    }
+                                  }
+                                ],
+                                "Properties": {
+                                  "layout": "Center"
+                                }
+                              }
+                            ],
+                            "Properties": {
+                              "layout": "Grid"
                             }
                           }
                         ],

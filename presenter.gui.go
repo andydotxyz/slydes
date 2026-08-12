@@ -14,9 +14,10 @@ import (
 type presenterGui struct {
 	win fyne.Window
 
+	clock          *widget.RichText
 	controls       *widget.Toolbar
-	timer          *widget.Label
 	notes          *widget.Label
+	timer          *widget.RichText
 	currentPreview *fyne.Container
 	nextPreview    *fyne.Container
 }
@@ -26,6 +27,7 @@ func newPresenterGUI() *presenterGui {
 }
 
 func (g *presenterGui) makeUI() fyne.CanvasObject {
+	g.clock = widget.NewRichTextFromMarkdown("# 12:34")
 	g.controls = widget.NewToolbar(
 		widget.NewToolbarAction(theme.NavigateBackIcon(), func() {}),
 		widget.NewToolbarAction(theme.NavigateNextIcon(), func() {}),
@@ -33,8 +35,8 @@ func (g *presenterGui) makeUI() fyne.CanvasObject {
 		widget.NewToolbarAction(theme.ViewRefreshIcon(), func() {}),
 		widget.NewToolbarAction(theme.LogoutIcon(), func() {}),
 	)
-	g.timer = &widget.Label{Text: "0:00:00", TextStyle: fyne.TextStyle{Bold: true, Italic: false, Monospace: true, Symbol: false, TabWidth: 0, Underline: false, Strikethrough: false}, Alignment: 1, Wrapping: 0}
-	g.notes = &widget.Label{Text: "", TextStyle: fyne.TextStyle{Monospace: true}, Wrapping: fyne.TextWrapWord}
+	g.notes = widget.NewLabelWithStyle("Presenter Notes", 0, fyne.TextStyle{Bold: false, Italic: false, Monospace: true, Symbol: false, TabWidth: 0, Underline: false, Strikethrough: false})
+	g.timer = widget.NewRichTextFromMarkdown("# 00:00")
 	g.currentPreview = container.NewStack(
 		&canvas.Image{File: "img/slide.png", FillMode: canvas.ImageFillContain, CornerRadius: 0.000000},
 	)
@@ -44,12 +46,18 @@ func (g *presenterGui) makeUI() fyne.CanvasObject {
 
 	return container.NewStack(
 		&container.Split{Horizontal: true, Offset: 0.670000, Leading: container.NewStack(
-			widget.NewLabelWithStyle("Current Slide", 0, fyne.TextStyle{Bold: true, Italic: false, Monospace: false, Symbol: false, TabWidth: 0, Underline: false, Strikethrough: false}),
+			widget.NewRichTextFromMarkdown("# Current Slide"),
 			g.currentPreview,
 		), Trailing: container.NewStack(
 			&container.Split{Horizontal: false, Offset: 0.600000, Leading: container.NewBorder(
 
-				g.timer,
+				container.NewGridWithColumns(2,
+					container.NewCenter(
+						g.clock,
+					),
+					container.NewCenter(
+						g.timer,
+					)),
 				nil,
 				nil,
 				nil,
@@ -68,9 +76,9 @@ func (g *presenterGui) makeUI() fyne.CanvasObject {
 }
 
 func (g *presenterGui) makeWindow(a fyne.App) fyne.Window {
-	w := a.NewWindow("presenter")
+	w := a.NewWindow("Slydes")
 	g.win = w
-	w.Resize(fyne.NewSize(699, 495))
+	w.Resize(fyne.NewSize(711, 495))
 	w.SetContent(g.makeUI())
 	return w
 }
