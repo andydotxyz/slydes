@@ -218,9 +218,9 @@ func addPresentationKeys(w fyne.Window) {
 			exitPresent()
 		case fyne.KeyT:
 			togglePresent()
-		case fyne.KeyLeft, fyne.KeyUp:
+		case fyne.KeyLeft, fyne.KeyUp, fyne.KeyPageUp:
 			prevSlide()
-		case fyne.KeyRight, fyne.KeyDown, fyne.KeySpace, fyne.KeyEnter, fyne.KeyReturn:
+		case fyne.KeyRight, fyne.KeyDown, fyne.KeyPageDown, fyne.KeySpace, fyne.KeyEnter, fyne.KeyReturn:
 			nextSlide()
 		}
 	})
