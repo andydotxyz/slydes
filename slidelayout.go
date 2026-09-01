@@ -23,7 +23,7 @@ func (s *slide) layout(size fyne.Size) {
 func (s *slide) layoutTitleSlide(size fyne.Size, scale float32) {
 	height := float32(0)
 	if s.heading != nil {
-		s.heading.setTextSize(theme.TextHeadingSize() * scale)
+		s.heading.setTextSize(s.parent.theme.Size(theme.SizeNameHeadingText) * scale)
 		s.heading.alignment = fyne.TextAlignCenter
 
 		headHeight := s.heading.MinSize().Height
@@ -32,7 +32,7 @@ func (s *slide) layoutTitleSlide(size fyne.Size, scale float32) {
 		s.heading.Refresh()
 	}
 	if s.subheading != nil {
-		s.subheading.setTextSize(theme.TextSubHeadingSize() * scale)
+		s.subheading.setTextSize(s.parent.theme.Size(theme.SizeNameSubHeadingText) * scale)
 		s.subheading.alignment = fyne.TextAlignCenter
 
 		subHeight := s.subheading.MinSize().Height
@@ -60,7 +60,7 @@ func (s *slide) layoutFallback(size fyne.Size, scale float32) {
 	y := pad
 	if s.heading != nil {
 		skip++
-		s.heading.setTextSize(theme.TextHeadingSize() * scale)
+		s.heading.setTextSize(s.parent.theme.Size(theme.SizeNameHeadingText) * scale)
 		s.heading.Resize(s.heading.MinSize())
 		s.heading.Move(fyne.NewPos(pad, pad))
 		s.heading.Refresh()
@@ -69,7 +69,7 @@ func (s *slide) layoutFallback(size fyne.Size, scale float32) {
 	subPad := float32(0)
 	if s.subheading != nil {
 		skip++
-		s.subheading.setTextSize(theme.TextSubHeadingSize() * scale)
+		s.subheading.setTextSize(s.parent.theme.Size(theme.SizeNameSubHeadingText) * scale)
 		s.subheading.Resize(s.subheading.MinSize())
 		s.subheading.Move(fyne.NewPos(pad, y))
 		s.subheading.Refresh()
