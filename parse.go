@@ -35,7 +35,8 @@ func (s *slides) parseMarkdown(data string) content {
 		return c
 	}
 
-	r := &parser{c: &c, parent: s, closedList: make(map[int]bool)}
+	r := &parser{c: &c, parent: s, closedList: make(map[int]bool),
+		ordered: make(map[int]bool), nextNum: make(map[int]int)}
 	md := goldmark.New(goldmark.WithRenderer(r), goldmark.WithExtensions(extension.Strikethrough))
 	err := md.Convert([]byte(data), nil)
 	if err != nil {
@@ -53,6 +54,11 @@ type parser struct {
 	segments   []textSegment // styled runs accumulated for the current bullet
 	c          *content
 	closedList map[int]bool
+
+	// ordered lists, keyed by list depth: whether the list at that depth is
+	// numbered and, if so, the number its next item takes.
+	ordered map[int]bool
+	nextNum map[int]int
 }
 
 func (p *parser) AddOptions(...renderer.Option) {}
@@ -83,6 +89,12 @@ func (p *parser) Render(_ io.Writer, source []byte, n ast.Node) error {
 			}
 			p.list = true
 			p.listDepth++
+			if l, ok := n.(*ast.List); ok && l.IsOrdered() {
+				p.ordered[p.listDepth] = true
+				p.nextNum[p.listDepth] = l.Start
+			} else {
+				p.ordered[p.listDepth] = false
+			}
 		case "ListItem":
 			tmpText = ""
 		case "Emphasis":
@@ -195,12 +207,19 @@ func (p *parser) closeElement(n ast.Node, flush func()) (ast.WalkStatus, error) 
 	return ast.WalkContinue, p.handleExitNode(n)
 }
 
-// renderBullet builds a bullet from the accumulated segments, if any.
+// renderBullet builds a bullet from the accumulated segments, if any. In an
+// ordered list it takes the next number of the list it belongs to.
 func (p *parser) renderBullet() {
 	if len(p.segments) == 0 {
 		p.segments = []textSegment{{text: ""}}
 	}
-	p.c.content = append(p.c.content, newBullet(p.segments, p.listDepth-1, p.parent.theme))
+	if p.ordered[p.listDepth] {
+		num := p.nextNum[p.listDepth]
+		p.nextNum[p.listDepth] = num + 1
+		p.c.content = append(p.c.content, newNumberedBullet(p.segments, p.listDepth-1, num, p.parent.theme))
+	} else {
+		p.c.content = append(p.c.content, newBullet(p.segments, p.listDepth-1, p.parent.theme))
+	}
 	p.segments = nil
 }
 

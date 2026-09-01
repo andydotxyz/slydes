@@ -191,3 +191,74 @@ func TestParseHTMLCommentsAsNotes(t *testing.T) {
 		t.Errorf("expected empty notes, got %q", c3.notes)
 	}
 }
+
+func TestParseNumberedBullets(t *testing.T) {
+	s := newSlides()
+	c := s.parseMarkdown("1. first\n2. second\n3. third\n")
+
+	if len(c.content) != 3 {
+		t.Fatalf("expected 3 bullets, got %d", len(c.content))
+	}
+	for i, want := range []string{"first", "second", "third"} {
+		b, ok := c.content[i].(*bullet)
+		if !ok {
+			t.Fatalf("expected item %d to be *bullet, got %T", i, c.content[i])
+		}
+		if !b.numbered {
+			t.Errorf("expected bullet %d to be numbered", i)
+		}
+		if b.number != i+1 {
+			t.Errorf("expected bullet %d to be number %d, got %d", i, i+1, b.number)
+		}
+		if b.content != want {
+			t.Errorf("expected bullet %d content %q, got %q", i, want, b.content)
+		}
+	}
+}
+
+// Markdown numbers each item from the list's start, whatever the source says.
+func TestParseNumberedBulletsStart(t *testing.T) {
+	s := newSlides()
+	c := s.parseMarkdown("3. third\n7. fourth\n")
+
+	if len(c.content) != 2 {
+		t.Fatalf("expected 2 bullets, got %d", len(c.content))
+	}
+	for i, want := range []int{3, 4} {
+		b := c.content[i].(*bullet)
+		if b.number != want {
+			t.Errorf("expected bullet %d to be number %d, got %d", i, want, b.number)
+		}
+	}
+}
+
+// A numbered list nested in an unordered one, and the reverse, each keep their
+// own marker and the outer list carries on counting after the nested one ends.
+func TestParseMixedNestedBullets(t *testing.T) {
+	s := newSlides()
+	c := s.parseMarkdown("1. one\n   * plain\n2. two\n")
+
+	if len(c.content) != 3 {
+		t.Fatalf("expected 3 bullets, got %d", len(c.content))
+	}
+	want := []struct {
+		content  string
+		indent   int
+		numbered bool
+		number   int
+	}{
+		{"one", 0, true, 1},
+		{"plain", 1, false, 0},
+		{"two", 0, true, 2},
+	}
+	for i, w := range want {
+		b, ok := c.content[i].(*bullet)
+		if !ok {
+			t.Fatalf("expected item %d to be *bullet, got %T", i, c.content[i])
+		}
+		if b.content != w.content || b.indent != w.indent || b.numbered != w.numbered || b.number != w.number {
+			t.Errorf("bullet %d: expected %+v, got content %q indent %d numbered %v number %d",
+				i, w, b.content, b.indent, b.numbered, b.number)
+		}
+	}
+}

@@ -2,6 +2,7 @@ package main
 
 import (
 	"image/color"
+	"strconv"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/canvas"
@@ -25,6 +26,10 @@ type textSegment struct {
 	strike bool
 }
 
+// dotSize is the diameter of an unordered bullet's dot, before scaling. A
+// numbered bullet reserves the same height so both list styles line up.
+const dotSize = float32(5)
+
 type bullet struct {
 	widget.BaseWidget
 	theme fyne.Theme
@@ -32,15 +37,48 @@ type bullet struct {
 	content  string // plain-text join of the segments, used for the empty check
 	segments []textSegment
 	indent   int
+	numbered bool // an ordered list item, marked with its number instead of a dot
+	number   int
 	scale    float32
 
-	dot   *canvas.Circle
+	dot   *canvas.Circle      // the marker of an unordered bullet
+	label *canvas.Text        // the marker of a numbered bullet
 	texts []*canvas.Text      // one per segment, index-aligned with segments
 	bgs   []*canvas.Rectangle // code-span backgrounds; nil entry for non-code segments
 }
 
 func newBullet(segments []textSegment, indent int, th fyne.Theme) *bullet {
 	return &bullet{theme: th, segments: segments, content: segmentsText(segments), indent: indent, scale: 1}
+}
+
+// newNumberedBullet builds the bullet for an item of an ordered list, marked
+// with the given number rather than a dot.
+func newNumberedBullet(segments []textSegment, indent, number int, th fyne.Theme) *bullet {
+	b := newBullet(segments, indent, th)
+	b.numbered = true
+	b.number = number
+	return b
+}
+
+// markerColor is the colour of the dot or number. An empty item has no marker.
+func (b *bullet) markerColor() color.Color {
+	if b.content == "" {
+		return color.Transparent
+	}
+	return b.theme.Color(colorNameBullet, theme.VariantLight)
+}
+
+// markerSize is the space the marker occupies. A numbered list lays out its
+// lines with the same spacing as an unordered one.
+func (b *bullet) markerSize() fyne.Size {
+	if b.numbered {
+		width := float32(0)
+		if b.label != nil {
+			width = b.label.MinSize().Width
+		}
+		return fyne.NewSize(width, dotSize*b.scale)
+	}
+	return b.dot.Size()
 }
 
 // segmentColor picks the text colour for a segment: inline code stays black to
@@ -53,12 +91,17 @@ func (b *bullet) segmentColor(seg textSegment) color.Color {
 }
 
 func (b *bullet) CreateRenderer() fyne.WidgetRenderer {
-	b.dot = canvas.NewCircle(b.theme.Color(colorNameBullet, theme.VariantLight))
-	if b.content == "" {
-		b.dot.FillColor = color.Transparent
+	var objs []fyne.CanvasObject
+	if b.numbered {
+		// The number matches the body text size so it reads as part of the list.
+		b.label = canvas.NewText(strconv.Itoa(b.number)+".", b.markerColor())
+		b.label.TextSize = theme.TextSize() * b.scale
+		objs = []fyne.CanvasObject{b.label}
+	} else {
+		b.dot = canvas.NewCircle(b.markerColor())
+		b.dot.Resize(fyne.NewSize(dotSize*b.scale, dotSize*b.scale))
+		objs = []fyne.CanvasObject{b.dot}
 	}
-
-	objs := []fyne.CanvasObject{b.dot}
 	b.texts = make([]*canvas.Text, len(b.segments))
 	b.bgs = make([]*canvas.Rectangle, len(b.segments))
 	for i, seg := range b.segments {
@@ -77,12 +120,12 @@ func (b *bullet) CreateRenderer() fyne.WidgetRenderer {
 
 func (b *bullet) Refresh() {
 	if b.dot != nil {
-		if b.content == "" {
-			b.dot.FillColor = color.Transparent
-		} else {
-			b.dot.FillColor = b.theme.Color(colorNameBullet, theme.VariantLight)
-		}
+		b.dot.FillColor = b.markerColor()
 		b.dot.Refresh()
+	}
+	if b.label != nil {
+		b.label.Color = b.markerColor()
+		b.label.Refresh()
 	}
 	for i, t := range b.texts {
 		t.Color = b.segmentColor(b.segments[i])
@@ -96,9 +139,16 @@ func (b *bullet) indentOffset() float32 {
 
 func (b *bullet) Resize(size fyne.Size) {
 	off := b.indentOffset()
-	b.dot.Move(fyne.NewPos(off, (size.Height-b.dot.Size().Height)/2))
+	marker := b.markerSize()
+	if b.numbered {
+		// Sized like the segment texts below so the exporter centres it the same way.
+		b.label.Move(fyne.NewPos(off, 0))
+		b.label.Resize(fyne.NewSize(marker.Width, size.Height))
+	} else {
+		b.dot.Move(fyne.NewPos(off, (size.Height-marker.Height)/2))
+	}
 
-	x := off + b.dot.Size().Width + theme.Padding()*b.scale
+	x := off + marker.Width + theme.Padding()*b.scale
 	for i, t := range b.texts {
 		min := t.MinSize()
 		if bg := b.bgs[i]; bg != nil {
@@ -128,14 +178,18 @@ func (b *bullet) MinSize() fyne.Size {
 		}
 	}
 	textMin := fyne.NewSize(width, height)
-	return b.dot.Size().Add(textMin).AddWidthHeight(theme.Padding()*b.scale+b.indentOffset(), 0)
+	return b.markerSize().Add(textMin).AddWidthHeight(theme.Padding()*b.scale+b.indentOffset(), 0)
 }
 
 func (b *bullet) setScale(scale float32) {
 	_ = test.WidgetRenderer(b)
 	b.scale = scale
 
-	b.dot.Resize(fyne.NewSize(5*scale, 5*scale))
+	if b.numbered {
+		b.label.TextSize = theme.TextSize() * scale
+	} else {
+		b.dot.Resize(fyne.NewSize(dotSize*scale, dotSize*scale))
+	}
 	for _, t := range b.texts {
 		t.TextSize = theme.TextSize() * scale
 	}

@@ -37,7 +37,18 @@ Content for slide
 * Second
 * Third
 
+---
+
+# Numbered bullets
+
+1. First
+2. Second
+3. Third
+
 ```
+
+Lists can be nested and the two styles can be mixed, an indented list keeping
+its own bullet or numbering.
 
 ## Code styling
 
