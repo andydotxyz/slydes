@@ -52,7 +52,9 @@ left side
 			break
 		}
 		if data[i] != b {
-			t.Error("Wrong data at index", i, b, "!=", data[i])
+			t.Error("export missmatch starting at index", i, b, "!=", data[i])
+			t.Fail()
+			return
 		}
 	}
 }
