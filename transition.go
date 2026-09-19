@@ -131,7 +131,7 @@ func changeSlide(p *presenting, to int) {
 // drives their progress uniform from 0 to 1, then drops back to the real slide.
 func startSlideTransition(p *presenting, from, to int) {
 	dir := 1
-	if to < from {
+	if to < from && !p.wrapping {
 		dir = -1
 	}
 
@@ -230,6 +230,8 @@ func updatePreviews(p *presenting) {
 	p.preview.setSource(p.items[p.id], p.id)
 	if p.id < len(p.items)-1 {
 		p.next.setSource(p.items[p.id+1], p.id+1)
+	} else if p.loop && len(p.items) > 1 {
+		p.next.setSource(p.items[0], 0)
 	} else {
 		p.next.setSource("", p.id+1)
 	}

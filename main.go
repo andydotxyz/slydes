@@ -50,6 +50,24 @@ func main() {
 	w.ShowAndRun()
 }
 
+// slideshowMenu builds the "Slideshow" menu, holding the options that apply the
+// next time a presentation is played.
+func slideshowMenu(g *gui) *fyne.Menu {
+	menu := fyne.NewMenu("Slideshow",
+		fyne.NewMenuItem("Play", g.showPresentWindow),
+		fyne.NewMenuItemSeparator(),
+	)
+	loop := fyne.NewMenuItem("Loop", nil)
+	loop.Checked = loopSlideshow
+	loop.Action = func() {
+		loopSlideshow = !loopSlideshow
+		loop.Checked = loopSlideshow
+		menu.Refresh()
+	}
+	menu.Items = append(menu.Items, loop)
+	return menu
+}
+
 // transitionMenu builds the "Transitions" menu: one item per movement, ticked
 // when it is the one in use.
 func transitionMenu() *fyne.Menu {
@@ -76,6 +94,13 @@ func nextSlide() {
 
 	p := currentPresenting
 	if p.id >= len(p.items)-1 {
+		if !p.loop || len(p.items) <= 1 {
+			return
+		}
+
+		p.wrapping = true
+		changeSlide(p, 0)
+		p.wrapping = false
 		return
 	}
 

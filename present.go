@@ -16,10 +16,13 @@ import (
 	"fyne.io/fyne/v2/widget"
 )
 
-var currentPresenting *presenting
+var (
+	currentPresenting *presenting
+	loopSlideshow     bool
 
-//go:embed "swap.svg"
-var resourceSwapSvg []byte
+	//go:embed "swap.svg"
+	resourceSwapSvg []byte
+)
 
 // progressHeight is the thickness, in points, of the presentation progress bar.
 const progressHeight = float32(5)
@@ -30,6 +33,8 @@ type presenting struct {
 	deck                 *slides
 	body                 *fyne.Container // the live window's aspect container
 	flipped              bool
+	loop                 bool // advancing past the last slide returns to the first
+	wrapping             bool // true while looping round, so the transition plays forwards
 	g                    *gui
 
 	id    int
@@ -134,6 +139,7 @@ func (g *gui) showPresentWindow() {
 	p := &presenting{
 		live: w2, slide: content, deck: g.s, body: body, id: id, items: items,
 		captures: make([]image.Image, len(items)), g: g, done: make(chan struct{}),
+		loop: loopSlideshow,
 	}
 	p.progressBox = canvas.NewRectangle(color.Black)
 	p.progressBox.SetMinSize(fyne.NewSquareSize(progressHeight))
