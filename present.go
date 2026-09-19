@@ -197,6 +197,11 @@ func (g *gui) showPresentWindow() {
 		w2.SetFullScreen(true)
 	}
 
+	a.Driver().SetDisableScreenBlanking(true)
+	w2.SetOnClosed(func() {
+		a.Driver().SetDisableScreenBlanking(false)
+	})
+
 	currentPresenting = p
 	w2.Show()
 	changeSlide(p, id)
