@@ -35,8 +35,10 @@ func (s *slides) parseMarkdown(data string) content {
 		return c
 	}
 
-	r := &parser{c: &c, parent: s, closedList: make(map[int]bool),
-		ordered: make(map[int]bool), nextNum: make(map[int]int)}
+	r := &parser{
+		c: &c, parent: s, closedList: make(map[int]bool),
+		ordered: make(map[int]bool), nextNum: make(map[int]int),
+	}
 	md := goldmark.New(goldmark.WithRenderer(r), goldmark.WithExtensions(extension.Strikethrough))
 	err := md.Convert([]byte(data), nil)
 	if err != nil {
