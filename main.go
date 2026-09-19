@@ -2,10 +2,12 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"image/color"
 	"io"
 	"os"
 	"path/filepath"
+	"time"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
@@ -45,6 +47,7 @@ func main() {
 	w.SetMainMenu(fyne.NewMainMenu(
 		fyne.NewMenu("File",
 			fyne.NewMenuItem("Open", g.openFile)),
+		slideshowMenu(g),
 		transitionMenu(),
 	))
 	w.ShowAndRun()
@@ -64,8 +67,36 @@ func slideshowMenu(g *gui) *fyne.Menu {
 		loop.Checked = loopSlideshow
 		menu.Refresh()
 	}
-	menu.Items = append(menu.Items, loop)
+	menu.Items = append(menu.Items, loop, autoProgressItem(menu))
 	return menu
+}
+
+func autoProgressItem(parent *fyne.Menu) *fyne.MenuItem {
+	auto := fyne.NewMenuItem("Auto-progress", nil)
+	auto.Checked = autoInterval != 0
+	auto.ChildMenu = fyne.NewMenu("")
+
+	intervals := []time.Duration{0, 5 * time.Second, 15 * time.Second, 30 * time.Second}
+	for _, d := range intervals {
+		title := "Off"
+		if d != 0 {
+			title = fmt.Sprintf("%d seconds", int(d.Seconds()))
+		}
+
+		item := fyne.NewMenuItem(title, nil)
+		item.Checked = d == autoInterval
+		item.Action = func() {
+			autoInterval = d
+			for i, other := range auto.ChildMenu.Items {
+				other.Checked = intervals[i] == autoInterval
+			}
+			auto.Checked = autoInterval != 0
+			auto.ChildMenu.Refresh()
+			parent.Refresh()
+		}
+		auto.ChildMenu.Items = append(auto.ChildMenu.Items, item)
+	}
+	return auto
 }
 
 // transitionMenu builds the "Transitions" menu: one item per movement, ticked

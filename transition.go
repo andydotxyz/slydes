@@ -101,6 +101,9 @@ func changeSlide(p *presenting, to int) {
 	if p.animating {
 		return // ignore navigation while a transition is playing
 	}
+	if p.autoTimer != nil {
+		p.autoTimer.Reset(p.autoInterval)
+	}
 	if to != p.id {
 		p.startTimer() // the clock runs from the first move off the opening slide
 	}

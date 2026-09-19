@@ -19,6 +19,7 @@ import (
 var (
 	currentPresenting *presenting
 	loopSlideshow     bool
+	autoInterval      time.Duration // how long auto-progress shows each slide, 0 when off
 
 	//go:embed "swap.svg"
 	resourceSwapSvg []byte
@@ -33,8 +34,10 @@ type presenting struct {
 	deck                 *slides
 	body                 *fyne.Container // the live window's aspect container
 	flipped              bool
-	loop                 bool // advancing past the last slide returns to the first
-	wrapping             bool // true while looping round, so the transition plays forwards
+	loop                 bool          // advancing past the last slide returns to the first
+	wrapping             bool          // true while looping round, so the transition plays forwards
+	autoInterval         time.Duration // how long each slide stays up, 0 when auto-progress is off
+	autoTimer            *time.Timer   // advances the slide when auto-progress is on, nil otherwise
 	g                    *gui
 
 	id    int
@@ -139,7 +142,7 @@ func (g *gui) showPresentWindow() {
 	p := &presenting{
 		live: w2, slide: content, deck: g.s, body: body, id: id, items: items,
 		captures: make([]image.Image, len(items)), g: g, done: make(chan struct{}),
-		loop: loopSlideshow,
+		loop: loopSlideshow, autoInterval: autoInterval,
 	}
 	p.progressBox = canvas.NewRectangle(color.Black)
 	p.progressBox.SetMinSize(fyne.NewSquareSize(progressHeight))
@@ -206,7 +209,21 @@ func (g *gui) showPresentWindow() {
 	a.Driver().SetDisableScreenBlanking(true)
 	w2.SetOnClosed(func() {
 		a.Driver().SetDisableScreenBlanking(false)
+		if p.autoTimer != nil {
+			p.autoTimer.Stop()
+		}
 	})
+
+	if p.autoInterval != 0 {
+		// changeSlide restarts this each time the slide changes
+		p.autoTimer = time.AfterFunc(p.autoInterval, func() {
+			fyne.Do(func() {
+				if currentPresenting == p {
+					nextSlide()
+				}
+			})
+		})
+	}
 
 	currentPresenting = p
 	w2.Show()
