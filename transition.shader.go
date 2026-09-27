@@ -42,7 +42,8 @@ import (
 // currentTransition is the one in use.
 var slideTransitions = []*shaderLayer{
 	shuffleTransition, flipTransition, twistTransition,
-	pixelateTransition, paperPlaneTransition,
+	pixelateTransition, paperPlaneTransition, cubeTransition,
+	burnTransition,
 }
 
 var currentTransition = shuffleTransition
