@@ -56,7 +56,8 @@ func precaptureSlides(p *presenting) {
 }
 
 // ensureNeighborsCaptured renders any of the current slide and its immediate
-// neighbours that have not been captured yet. It is safe to call from any
+// neighbours that have not been captured yet. When looping, the first and last
+// slides count as neighbours of each other. It is safe to call from any
 // goroutine.
 func ensureNeighborsCaptured(p *presenting) {
 	p.captureMu.Lock()
@@ -68,6 +69,11 @@ func ensureNeighborsCaptured(p *presenting) {
 
 	id := p.id
 	for _, idx := range [3]int{id, id + 1, id - 1} {
+		if p.loop && idx == len(p.items) {
+			idx = 0
+		} else if p.loop && idx < 0 {
+			idx = len(p.items) - 1
+		}
 		if idx < 0 || idx >= len(p.items) || p.captures[idx] != nil {
 			continue
 		}
@@ -135,8 +141,11 @@ func changeSlide(p *presenting, to int) {
 // drives their progress uniform from 0 to 1, then drops back to the real slide.
 func startSlideTransition(p *presenting, from, to int) {
 	dir := 1
-	if to < from && !p.wrapping {
+	if to < from {
 		dir = -1
+	}
+	if p.wrapping {
+		dir = -dir // looping round jumps the other way through the deck
 	}
 
 	layers := []fyne.CanvasObject{canvas.NewRectangle(color.Black), p.body}

@@ -34,8 +34,8 @@ type presenting struct {
 	deck                 *slides
 	body                 *fyne.Container // the live window's aspect container
 	flipped              bool
-	loop                 bool          // advancing past the last slide returns to the first
-	wrapping             bool          // true while looping round, so the transition plays forwards
+	loop                 bool          // the first and last slides follow on from each other
+	wrapping             bool          // true while looping round, so the transition plays the way we are stepping
 	autoInterval         time.Duration // how long each slide stays up, 0 when auto-progress is off
 	autoTimer            *time.Timer   // advances the slide when auto-progress is on, nil otherwise
 	g                    *gui

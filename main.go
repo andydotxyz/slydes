@@ -56,7 +56,8 @@ func main() {
 // slideshowMenu builds the "Slideshow" menu, holding the options that apply the
 // next time a presentation is played.
 func slideshowMenu(g *gui) *fyne.Menu {
-	menu := fyne.NewMenu("Slideshow",
+	menu := fyne.NewMenu(
+		"Slideshow",
 		fyne.NewMenuItem("Play", g.showPresentWindow),
 		fyne.NewMenuItemSeparator(),
 	)
@@ -145,6 +146,13 @@ func prevSlide() {
 
 	p := currentPresenting
 	if p.id <= 0 {
+		if !p.loop || len(p.items) <= 1 {
+			return
+		}
+
+		p.wrapping = true
+		changeSlide(p, len(p.items)-1)
+		p.wrapping = false
 		return
 	}
 
