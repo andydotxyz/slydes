@@ -124,7 +124,7 @@ func (p *presenting) updateProgress() {
 
 	p.progressFraction = p.fraction()
 	target := fyne.NewSize(p.body.Size().Width*p.progressFraction, progressHeight)
-	canvas.NewSizeAnimation(p.progressFill.Size(), target, transitionDuration,
+	canvas.NewSizeAnimation(p.progressFill.Size(), target, currentTransition.length(),
 		func(s fyne.Size) {
 			p.progressFill.Resize(s)
 		}).Start()

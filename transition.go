@@ -11,7 +11,8 @@ import (
 	"fyne.io/fyne/v2/driver/software"
 )
 
-// transitionDuration is how long the galaxy shuffle takes end to end.
+// transitionDuration is how long a transition takes end to end, unless it asks
+// for a time of its own (see shaderLayer.lasting).
 const transitionDuration = 1300 * time.Millisecond
 
 // precaptureSlides determines the capture resolution from the live window and
@@ -108,7 +109,7 @@ func changeSlide(p *presenting, to int) {
 		p.startTimer() // the clock runs from the first move off the opening slide
 	}
 	go func() {
-		time.Sleep(transitionDuration + (time.Millisecond * 250))
+		time.Sleep(currentTransition.length() + (time.Millisecond * 250))
 		fyne.Do(func() {
 			p.g.moveCursor(to)
 			_ = p.g.s.current.Set(to)
@@ -177,10 +178,11 @@ func startSlideTransition(p *presenting, from, to int) {
 	}
 	win.SetContent(container.NewStack(layers...))
 
-	seconds := float32(transitionDuration.Seconds())
+	length := currentTransition.length()
+	seconds := float32(length.Seconds())
 	finished := false
 	anim := &fyne.Animation{
-		Duration: transitionDuration,
+		Duration: length,
 		Curve:    fyne.AnimationLinear,
 		Tick: func(done float32) {
 			for _, s := range shaders {

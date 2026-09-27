@@ -1,6 +1,8 @@
 package main
 
 import (
+	"time"
+
 	"fyne.io/fyne/v2/canvas"
 )
 
@@ -40,7 +42,7 @@ import (
 // currentTransition is the one in use.
 var slideTransitions = []*shaderLayer{
 	shuffleTransition, flipTransition, twistTransition,
-	pixelateTransition,
+	pixelateTransition, paperPlaneTransition,
 }
 
 var currentTransition = shuffleTransition
@@ -50,6 +52,7 @@ type shaderLayer struct {
 	name             string // unique - Fyne caches the compiled program under it
 	title            string // human readable, for the menu
 	source, sourceES []byte
+	duration         time.Duration // how long it takes to play, 0 for transitionDuration
 }
 
 // newShaderLayer prepends the shared prelude to body and wraps the result in
@@ -74,6 +77,21 @@ precision lowp sampler2D;
 #endif
 ` + src),
 	}
+}
+
+// lasting gives the layer a running time of its own, for effects with more to
+// show than fits in transitionDuration.
+func (l *shaderLayer) lasting(d time.Duration) *shaderLayer {
+	l.duration = d
+	return l
+}
+
+// length is how long the layer takes to play.
+func (l *shaderLayer) length() time.Duration {
+	if l.duration > 0 {
+		return l.duration
+	}
+	return transitionDuration
 }
 
 // newShader builds a canvas object for this layer. Uniforms and textures are
