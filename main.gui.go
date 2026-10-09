@@ -11,14 +11,16 @@ import (
 	"fyne.io/fyne/v2/data/binding"
 	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
+	xmenu "fyne.io/x/fyne/menu"
 )
 
 type gui struct {
 	content *widget.Entry
 	render  *slide
 
-	win fyne.Window
-	s   *slides
+	win     fyne.Window
+	s       *slides
+	recents *xmenu.Recents
 
 	refresh bool
 }

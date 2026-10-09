@@ -4,16 +4,14 @@ import (
 	"flag"
 	"fmt"
 	"image/color"
-	"io"
-	"os"
 	"path/filepath"
 	"time"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
 	"fyne.io/fyne/v2/canvas"
-	"fyne.io/fyne/v2/dialog"
 	"fyne.io/fyne/v2/storage"
+	xmenu "fyne.io/x/fyne/menu"
 )
 
 func main() {
@@ -27,26 +25,21 @@ func main() {
 	w.SetContent(g.makeUI())
 	w.Canvas().Focus(g.content)
 
+	g.recents = xmenu.NewRecents("Recent items...", g.openURI)
+	g.recents.SetItemLabel(func(u fyne.URI) string {
+		return filepath.Base(filepath.Dir(u.Path()))
+	})
+
 	flag.Parse()
 	if len(flag.Args()) > 0 && len(flag.Args()[0]) > 0 {
-		path := flag.Args()[0]
-
-		f, _ := os.Open(path)
-		data, err := io.ReadAll(f)
-		_ = f.Close()
-
-		if err != nil {
-			dialog.ShowError(err, g.win)
-		} else {
-			absPath, _ := filepath.Abs(path)
-			g.s.uri = storage.NewFileURI(absPath)
-			g.content.SetText(string(data))
-		}
+		absPath, _ := filepath.Abs(flag.Args()[0])
+		g.openURI(storage.NewFileURI(absPath))
 	}
 
 	w.SetMainMenu(fyne.NewMainMenu(
 		fyne.NewMenu("File",
-			fyne.NewMenuItem("Open", g.openFile)),
+			fyne.NewMenuItem("Open", g.openFile),
+			g.recents.MenuItem()),
 		slideshowMenu(g),
 		transitionMenu(),
 	))

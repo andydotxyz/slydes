@@ -96,18 +96,34 @@ func (g *gui) openFile() {
 			return
 		}
 
-		data, err := io.ReadAll(r)
-		_ = r.Close()
-
-		if err != nil {
-			dialog.ShowError(err, g.win)
-		} else {
-			g.s.uri = r.URI()
-			g.content.SetText(string(data))
-		}
+		g.load(r)
 	}, g.win)
 	d.SetFilter(storage.NewExtensionFileFilter([]string{".md"}))
 	d.Show()
+}
+
+func (g *gui) openURI(u fyne.URI) {
+	r, err := storage.Reader(u)
+	if err != nil {
+		dialog.ShowError(err, g.win)
+		return
+	}
+
+	g.load(r)
+}
+
+func (g *gui) load(r fyne.URIReadCloser) {
+	data, err := io.ReadAll(r)
+	_ = r.Close()
+
+	if err != nil {
+		dialog.ShowError(err, g.win)
+		return
+	}
+
+	g.s.uri = r.URI()
+	g.content.SetText(string(data))
+	g.recents.Add(r.URI())
 }
 
 func (g *gui) saveFile() {
@@ -139,5 +155,6 @@ func (g *gui) saveFile() {
 			dialog.ShowError(err, g.win)
 		}
 		g.s.uri = w.URI()
+		g.recents.Add(w.URI())
 	}, g.win)
 }
